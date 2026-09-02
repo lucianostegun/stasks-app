@@ -133,14 +133,14 @@ Intervalo padrão 15s (Tier 2 permite ~20 req/min). Pausa em `NSWorkspace.willSl
 
 Ciclo:
 
-1. `reactions.list?limit=50` (itens do usuário autenticado, mais recentes primeiro).
+1. `reactions.list?limit=50&full=true` (itens do usuário autenticado, mais recentes primeiro; `full=true` traz todos os usuários de cada reação e o `permalink`).
 2. Para cada item do tipo `message`, considerando apenas reações onde `users` inclui o próprio `user_id`:
    - contém `eyes` e não existe task com `(channelId, ts)` e `ts >= installedAt - 24h` → cria task.
    - contém `white_check_mark` ou `verify` e existe task não `Done` → `Done`.
 3. Ao criar task:
    - título provisório = texto da mensagem, primeira linha, 80 chars; `isProvisionalTitle = true`
    - subtítulo = `#<canal> · <autor>` (`conversations.info`, `users.info`, com cache em memória por 1h). DMs: `DM · <autor>`
-   - `permalink` via `chat.getPermalink`
+   - `permalink` vem no próprio item de `reactions.list` (`full=true`)
    - se `thread_ts` presente: `conversations.replies?limit=15` para contexto
    - dispara `TitleGenerator` em background
 4. Atualiza `lastSeenTs` por canal.
@@ -154,7 +154,7 @@ Primeiro boot: `installedAt = now`; só mensagens das últimas 24h entram.
 
 ## 6. `TitleGenerator`
 
-- Endpoint Anthropic Messages, modelo `claude-haiku-4-5-20251001`, `max_tokens: 60`, `temperature: 0.2`.
+- Endpoint Anthropic Messages, modelo `claude-haiku-4-5`, `max_tokens: 60`, `temperature: 0.2`.
 - System prompt: "Você recebe uma mensagem do Slack e o contexto da thread. Gere um título de tarefa acionável para quem vai responder ou agir sobre a mensagem. Responda só com o título, no idioma da mensagem, máximo 60 caracteres, sem aspas, sem ponto final."
 - User content: canal, autor, mensagem, até 15 mensagens da thread (autor + texto).
 - Sucesso: se `!isPinnedTitle`, aplica título, `isProvisionalTitle = false`.
