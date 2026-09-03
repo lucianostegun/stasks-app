@@ -1,0 +1,61 @@
+{
+  "fill" : {
+    "linear-gradient" : [
+      "display-p3:0.23070,0.23850,0.28785,1.00000",
+      "display-p3:0.07571,0.09084,0.13167,1.00000"
+    ],
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 0.7
+      }
+    }
+  },
+  "groups" : [
+    {
+      "blur-material" : null,
+      "layers" : [
+        {
+          "glass" : true,
+          "image-name" : "Codex Image Sep 3, 2026, 10_16_58 AM.png",
+          "name" : "Codex Image Sep 3, 2026, 10_16_58 AM",
+          "position" : {
+            "scale" : 0.79,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "specular-specializations" : [
+        {
+          "value" : false
+        },
+        {
+          "appearance" : "light",
+          "value" : false
+        }
+      ],
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.25
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

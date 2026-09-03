@@ -16,6 +16,8 @@ targets:
       - path: Stasks
       - path: hooks/stasks-hook.sh
         buildPhase: resources
+      - path: Stasks/AppIcon.icon
+        buildPhase: resources
     dependencies:
       - package: StasksCore
     info:

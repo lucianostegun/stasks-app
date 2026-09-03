@@ -27,6 +27,7 @@
 		E3E34A89AEC3928473038513 /* SettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93049E7F3FF26A36C954E5A9 /* SettingsModel.swift */; };
 		EBA7774804401594123A2324 /* TaskRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46FDEBB5D4712DB866FAB101 /* TaskRowView.swift */; };
 		FE9542C45CEC221820E2F5C4 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 226B41948E0E7A472FA63CC9 /* StatusItemController.swift */; };
+		FF5EC0724AC7B4ABB3E17C28 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = AFFBFE7CBDD29870C0C6D079 /* AppIcon.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +47,7 @@
 		93049E7F3FF26A36C954E5A9 /* SettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModel.swift; sourceTree = "<group>"; };
 		9338FD8E35F7AD03A27139FE /* StasksCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = StasksCore; path = StasksCore; sourceTree = SOURCE_ROOT; };
 		9EA7E8FA0160F1F3BFB0E1DB /* PanelHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelHeaderView.swift; sourceTree = "<group>"; };
+		AFFBFE7CBDD29870C0C6D079 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		B169C20CBF568D6AD079D07B /* StackPanelWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackPanelWindow.swift; sourceTree = "<group>"; };
 		B2C7FEFEA7B066E287B99502 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C19676B964487247C4347378 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -134,6 +136,7 @@
 		814362A8A4F986305F0E169D /* Stasks */ = {
 			isa = PBXGroup;
 			children = (
+				AFFBFE7CBDD29870C0C6D079 /* AppIcon.icon */,
 				B2C7FEFEA7B066E287B99502 /* Info.plist */,
 				2A0E98A4FD7D5E98E24AE15F /* App */,
 				4839EEA803FA0F4C0CACC15D /* Panel */,
@@ -215,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FF5EC0724AC7B4ABB3E17C28 /* AppIcon.icon in Resources */,
 				4162082B14FAE14CEABCFCC9 /* stasks-hook.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
