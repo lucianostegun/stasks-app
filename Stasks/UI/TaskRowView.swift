@@ -70,7 +70,8 @@ struct TaskRowView: View {
         .background(hovering ? Theme.rowHover(scheme) : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .background(activityGlow)
         .contentShape(Rectangle())
-        .onAppear { pulse = true }
+        .onAppear { if activity == .waitingInput { startPulse() } }
+        .onChange(of: activity) { _, new in new == .waitingInput ? startPulse() : stopPulse() }
         .onHover { hovering = $0 }
         .onTapGesture(count: 2) { startEditing() }
         .onTapGesture(count: 1) { if !editing { onOpen() } }
@@ -97,12 +98,23 @@ struct TaskRowView: View {
                 shape.strokeBorder(color.opacity(waiting ? (pulse ? 0.9 : 0.35) : 0.45), lineWidth: 1)
                     .shadow(color: color.opacity(waiting ? (pulse ? 0.8 : 0.2) : 0.35), radius: waiting ? (pulse ? 14 : 4) : 8)
             }
-            .animation(waiting ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true) : .easeInOut(duration: 0.3), value: pulse)
             .allowsHitTesting(false)
         }
     }
 
     private func startEditing() { draft = task.title; editing = true; focused = true }
+
+    /// The repeat-forever animation only runs on a value change, so reset first and flip on the next run loop turn.
+    private func startPulse() {
+        pulse = false
+        DispatchQueue.main.async {
+            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { pulse = true }
+        }
+    }
+
+    private func stopPulse() {
+        withAnimation(.easeInOut(duration: 0.3)) { pulse = false }
+    }
 
     private func label(for s: TaskStatus) -> String {
         switch s { case .open: return L("status.open"); case .inProgress: return L("status.inProgress"); case .done: return L("status.done") }
