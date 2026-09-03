@@ -2,9 +2,12 @@ import Foundation
 
 /// Chat Completions client for OpenAI and anything that speaks its API (Ollama, Groq, OpenRouter, LM Studio).
 /// Sends `max_completion_tokens` and no `temperature`, which OpenAI reasoning models reject.
+/// The token cap has a floor: reasoning models spend it on hidden reasoning first, and a tight cap
+/// returns `finish_reason: length` with empty content.
 public struct OpenAICompatibleClient: LLMClient {
     public static let defaultBaseURL = "https://api.openai.com/v1"
     public static let defaultModel = "gpt-5-mini"
+    public static let minCompletionTokens = 1024
 
     private let endpoint: URL
     private let apiKey: String
@@ -37,7 +40,7 @@ public struct OpenAICompatibleClient: LLMClient {
         if !apiKey.isEmpty { req.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization") }
         let body: [String: Any] = [
             "model": model,
-            "max_completion_tokens": maxTokens,
+            "max_completion_tokens": max(maxTokens, Self.minCompletionTokens),
             "messages": [["role": "system", "content": system], ["role": "user", "content": user]],
         ]
         req.httpBody = try JSONSerialization.data(withJSONObject: body)

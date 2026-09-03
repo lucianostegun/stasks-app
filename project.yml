@@ -25,10 +25,11 @@ targets:
       path: Stasks/Info.plist
       properties:
         LSUIElement: true
+        LSApplicationCategoryType: public.app-category.productivity
         CFBundleDisplayName: Stasks
         CFBundleName: Stasks
         NSAppleEventsUsageDescription: Stasks focuses the iTerm2 tab of a Claude Code session when you click a task.
-        NSHumanReadableCopyright: Luciano Stegun
+        NSHumanReadableCopyright: "© 2026 Volkker Tech"
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
@@ -39,9 +40,9 @@ targets:
         SWIFT_VERSION: "5"
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
-        CODE_SIGN_IDENTITY: "-"
-        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: Automatic
         ENABLE_HARDENED_RUNTIME: NO
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: MJGJ2M2MK9
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_STRICT_CONCURRENCY: minimal

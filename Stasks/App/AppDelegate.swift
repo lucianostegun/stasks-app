@@ -65,6 +65,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         model.onOpenSettings = { [weak self] in self?.openSettings() }
         model.manualHeight = prefs.panelHeight.map { CGFloat($0) }
         model.onResetHeight = { [weak self] in self?.panel.resetHeight() }
+        model.onSyncSlack = { [weak self] in
+            guard let self else { return }
+            await self.poller.pollOnce()
+            await self.poller.retryProvisionalTitles()
+        }
         panel.onManualHeightChanged = { [weak self] h in self?.model.manualHeight = h }
         panel.onShow = { [weak self] in
             Task { @MainActor in
@@ -217,6 +222,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// The unconfigured banner only matters once Slack is configured, since the LLM is used for Slack titles alone.
     private func refreshCredentialState() {
         let hasSlack = !(KeychainStore.get(KeychainStore.slackToken) ?? "").isEmpty
+        model.slackConfigured = hasSlack
         model.titleProviderUnconfigured = hasSlack && !TitleClientFactory.isConfigured(prefs)
     }
 
@@ -232,6 +238,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// Owns its own window: the SwiftUI `Settings` scene's `showSettingsWindow:` selector does not
     /// respond in an accessory (LSUIElement) app driven from a status item.
+    /// While Settings is open the app is `.regular`, so it shows in Cmd+Tab and can take key focus;
+    /// closing the window returns it to `.accessory`.
     @objc func openSettings() {
         guard let sm = settingsModel else { return }
         if settingsWindow == nil {
@@ -241,9 +249,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             w.styleMask = [.titled, .closable, .miniaturizable]
             w.isReleasedWhenClosed = false
             w.center()
+            NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: w, queue: .main) { _ in
+                MainActor.assumeIsolated { _ = NSApp.setActivationPolicy(.accessory) }
+            }
             settingsWindow = w
         }
         sm.refreshHookStatus()
+        _ = NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
     }

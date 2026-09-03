@@ -7,7 +7,7 @@ Stasks is a macOS menu bar app that keeps one stack of tasks from three sources:
 - macOS with iTerm2 for Claude task focusing.
 - `jq` on `PATH`: the Claude hook parses its payload with `jq` and exits silently when it is missing, so no Claude tasks appear.
 - The first click on a Claude task triggers a macOS Automation (Apple Events) prompt for iTerm2. It must be allowed, otherwise focusing silently falls back to opening the project folder in Finder.
-- The app is signed ad hoc, so Keychain and Automation prompts can reappear after every rebuild.
+- The app is signed with the Volkker development certificate (team MJGJ2M2MK9), so Keychain and Automation grants survive rebuilds. Building on a machine without that certificate needs `CODE_SIGN_IDENTITY: "-"` in `project.yml`, and then those prompts return after every rebuild.
 
 ## Make targets
 
@@ -53,7 +53,7 @@ Slack
 - [ ] React 👀 on a message: task appears within 15s with provisional title, then the LLM title replaces it (Anthropic key set).
 - [ ] Subtitle is "#channel · Author"; for a DM it is "DM · Author".
 - [ ] Left click opens the message in Slack.
-- [ ] React ✅ or :verify: on it: task goes Done within 15s. Removing 👀 does nothing.
+- [ ] React ✅, ✔️, ☑️, :verify:, :done: or :done-check: on it: task goes Done within 15s. Removing 👀 does nothing.
 - [ ] Revoke/typo the token: red dot on the icon and banner "Slack disconnected (invalid_auth)"; fixing the token and Save recovers.
 
 Panel

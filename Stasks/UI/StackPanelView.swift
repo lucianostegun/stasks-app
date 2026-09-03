@@ -42,21 +42,16 @@ struct StackPanelView: View {
 
             if model.prefs.order == .fifo { newField.padding(.top, 8) }
 
-            if !completed.isEmpty {
+            if !completed.isEmpty || model.slackConfigured {
                 Divider().opacity(0.4).padding(.horizontal, 6).padding(.vertical, 8)
-                Button {
-                    withAnimation(.spring(duration: 0.25)) { model.prefs.completedCollapsed.toggle() }
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: model.prefs.completedCollapsed ? "chevron.right" : "chevron.down").font(.system(size: 9, weight: .bold))
-                        Text(L("panel.completed")).font(.system(size: 12, weight: .semibold))
-                        Text("\(completed.count)").font(.system(size: 11, weight: .semibold))
-                            .padding(.horizontal, 7).padding(.vertical, 1).background(Theme.chip(scheme), in: Capsule())
-                        Spacer()
-                    }.foregroundStyle(.secondary).padding(.horizontal, 8).padding(.vertical, 4)
-                }.buttonStyle(.plain)
+                HStack(spacing: 8) {
+                    if !completed.isEmpty { completedToggle }
+                    Spacer()
+                    if model.slackConfigured { syncButton }
+                }
+                .padding(.horizontal, 6)
 
-                if !model.prefs.completedCollapsed {
+                if !completed.isEmpty, !model.prefs.completedCollapsed {
                     LazyVStack(spacing: 2) { ForEach(completed) { task in row(task).opacity(0.8) } }
                         .frame(maxHeight: 220)
                 }
@@ -74,6 +69,31 @@ struct StackPanelView: View {
         .onGeometryChange(for: CGSize.self) { $0.size } action: { model.onSizeChange($0) }
         .overlay(settingsShortcut)
         .overlay(newTaskShortcut)
+    }
+
+    private var completedToggle: some View {
+        Button {
+            withAnimation(.spring(duration: 0.25)) { model.prefs.completedCollapsed.toggle() }
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: model.prefs.completedCollapsed ? "chevron.right" : "chevron.down").font(.system(size: 9, weight: .bold))
+                Text(L("panel.completed")).font(.system(size: 12, weight: .semibold))
+                Text("\(completed.count)").font(.system(size: 11, weight: .semibold))
+                    .padding(.horizontal, 7).padding(.vertical, 1).background(Theme.chip(scheme), in: Capsule())
+            }.foregroundStyle(.secondary).padding(.horizontal, 2).padding(.vertical, 4)
+        }.buttonStyle(.plain)
+    }
+
+    /// Manual Slack sync: polls reactions now and retries provisional titles, instead of waiting for the next cycle.
+    private var syncButton: some View {
+        Button { model.syncSlack() } label: {
+            Image(systemName: "arrow.clockwise")
+                .rotationEffect(.degrees(model.isSyncing ? 360 : 0))
+                .animation(model.isSyncing ? .linear(duration: 0.9).repeatForever(autoreverses: false) : .default, value: model.isSyncing)
+        }
+        .buttonStyle(HeaderButtonStyle())
+        .disabled(model.isSyncing)
+        .help(L("panel.help.syncSlack"))
     }
 
     /// Invisible button so ⌘, opens Settings while the panel is the key window.

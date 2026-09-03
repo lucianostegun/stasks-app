@@ -7,7 +7,8 @@ public enum SlackReactionEvent: Equatable, Sendable {
 
 public enum SlackReactionMapper {
     public static let openEmoji: Set<String> = ["eyes"]
-    public static let doneEmoji: Set<String> = ["white_check_mark", "verify"]
+    /// ✅, ✔️, ☑️ and the SOCi custom :verify:, :done:, :done-check:.
+    public static let doneEmoji: Set<String> = ["white_check_mark", "heavy_check_mark", "ballot_box_with_check", "verify", "done", "done-check"]
 
     public static func date(fromTs ts: String) -> Date? {
         guard let seconds = Double(ts) else { return nil }

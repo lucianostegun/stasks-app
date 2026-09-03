@@ -27,6 +27,16 @@ final class ClaudeCodeClientTests: XCTestCase {
         XCTAssertEqual(args.last, "")   // trailing newline from the recorder
     }
 
+    func testRunsInsideDedicatedEmptyWorkingDirectory() async throws {
+        let (exe, _) = try fakeExecutable("pwd")
+        let cwd = FileManager.default.temporaryDirectory.appendingPathComponent("stasks-cwd-\(UUID().uuidString)")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: cwd.path))
+        let text = try await ClaudeCodeClient(executable: exe, workingDirectory: cwd).complete(system: "s", user: "u", maxTokens: 10)
+        XCTAssertEqual(URL(fileURLWithPath: text.trimmingCharacters(in: .whitespacesAndNewlines)).resolvingSymlinksInPath().path,
+                       cwd.resolvingSymlinksInPath().path)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: cwd.path))   // created on demand
+    }
+
     func testNonZeroExitBecomesProcessError() async throws {
         let (exe, _) = try fakeExecutable("echo 'not logged in' >&2; exit 3")
         do { _ = try await ClaudeCodeClient(executable: exe).complete(system: "s", user: "u", maxTokens: 10); XCTFail("expected error") }

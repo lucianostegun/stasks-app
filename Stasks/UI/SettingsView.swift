@@ -18,7 +18,8 @@ struct SettingsView: View {
             titles.tabItem { Label(L("settings.tab.titles"), systemImage: "sparkles") }
             sounds.tabItem { Label(L("settings.tab.sounds"), systemImage: "speaker.wave.2") }
         }
-        .frame(width: 460, height: 320)
+        .padding(.top, 12)
+        .frame(width: 560, height: 440)
         .onAppear { model.refreshHookStatus() }
     }
 
@@ -61,7 +62,7 @@ struct SettingsView: View {
 
     private var slack: some View {
         Form {
-            SecureField(L("settings.slack.token"), text: $model.slackToken)
+            SecureField(L("settings.slack.token"), text: $model.slackToken, prompt: Text("xoxp-…"))
             HStack {
                 Button(L("common.save")) { model.saveSlackToken() }
                 Button(L("common.test")) { Task { await model.testSlack() } }.disabled(model.slackToken.isEmpty)
@@ -71,7 +72,7 @@ struct SettingsView: View {
                 .onChange(of: prefs.pollInterval) { _, new in model.onPollIntervalChanged(new) }
             Text("Scopes: reactions:read, channels:history, groups:history, im:history, mpim:history, channels:read, groups:read, users:read")
                 .font(.caption2).foregroundStyle(.tertiary)
-        }.formStyle(.grouped)
+        }.formStyle(.grouped).textFieldStyle(.roundedBorder)
     }
 
     private var sounds: some View {
@@ -100,23 +101,23 @@ struct SettingsView: View {
 
             switch prefs.titleProvider {
             case .anthropic:
-                SecureField(L("settings.titles.apiKey"), text: $model.anthropicKey)
+                SecureField(L("settings.titles.apiKey"), text: $model.anthropicKey, prompt: Text("sk-ant-…"))
                 HStack {
                     Button(L("common.save")) { model.saveAnthropicKey() }
                     Button(L("common.test")) { Task { await model.testTitles() } }
                 }
                 Text(L("settings.titles.model.fixed", AnthropicClient.model)).font(.caption2).foregroundStyle(.tertiary)
             case .openAI:
-                TextField(L("settings.titles.baseURL"), text: $prefs.openAIBaseURL)
-                TextField(L("settings.titles.model"), text: $prefs.openAIModel)
-                SecureField(L("settings.titles.apiKey"), text: $model.openAIKey)
+                TextField(L("settings.titles.baseURL"), text: $prefs.openAIBaseURL, prompt: Text(OpenAICompatibleClient.defaultBaseURL))
+                TextField(L("settings.titles.model"), text: $prefs.openAIModel, prompt: Text(OpenAICompatibleClient.defaultModel))
+                SecureField(L("settings.titles.apiKey"), text: $model.openAIKey, prompt: Text("sk-…"))
                 HStack {
                     Button(L("common.save")) { model.saveOpenAIKey() }
                     Button(L("common.test")) { Task { await model.testTitles() } }
                 }
                 Text(L("settings.titles.hint.openAI")).font(.caption2).foregroundStyle(.tertiary)
             case .claudeCode:
-                TextField(L("settings.titles.model"), text: $prefs.claudeCodeModel)
+                TextField(L("settings.titles.model"), text: $prefs.claudeCodeModel, prompt: Text(ClaudeCodeClient.defaultModel))
                 TextField(L("settings.titles.claudePath"), text: $prefs.claudeCodePath, prompt: Text(L("settings.titles.claudePath.auto")))
                 LabeledContent(L("settings.titles.claudePath.detected")) {
                     Text(model.detectedClaudePath ?? L("settings.titles.claudeNotFound"))
@@ -126,6 +127,6 @@ struct SettingsView: View {
                 Text(L("settings.titles.hint.claudeCode")).font(.caption2).foregroundStyle(.tertiary)
             }
             if let r = model.titleTestResult { Text(r).font(.caption).foregroundStyle(.secondary) }
-        }.formStyle(.grouped)
+        }.formStyle(.grouped).textFieldStyle(.roundedBorder)
     }
 }

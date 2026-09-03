@@ -9,11 +9,19 @@ public struct ClaudeCodeClient: LLMClient {
     public let executable: String
     public let model: String
     public let timeout: TimeInterval
+    /// Where `claude` runs. Must be an empty, dedicated folder: Claude Code treats its cwd as the project root and
+    /// scans it, and a GUI app's cwd is `/`, which would touch Desktop, Downloads and /Volumes and trigger TCC prompts.
+    public let workingDirectory: URL
 
-    public init(executable: String, model: String = ClaudeCodeClient.defaultModel, timeout: TimeInterval = 60) {
+    public static let defaultWorkingDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("Stasks/claude-workdir")
+
+    public init(executable: String, model: String = ClaudeCodeClient.defaultModel, timeout: TimeInterval = 60,
+                workingDirectory: URL = ClaudeCodeClient.defaultWorkingDirectory) {
         self.executable = executable
         self.model = model
         self.timeout = timeout
+        self.workingDirectory = workingDirectory
     }
 
     /// First executable found among `searchPaths`, or nil when Claude Code is not installed.
@@ -40,12 +48,14 @@ public struct ClaudeCodeClient: LLMClient {
     /// `maxTokens` is ignored: the CLI has no such flag and the system prompt already bounds the title length.
     public func complete(system: String, user: String, maxTokens: Int) async throws -> String {
         let args = Self.arguments(system: system, user: user, model: model)
-        let exe = executable, timeout = timeout
+        let exe = executable, timeout = timeout, cwd = workingDirectory
         return try await withCheckedThrowingContinuation { cont in
             DispatchQueue.global(qos: .utility).async {
+                try? FileManager.default.createDirectory(at: cwd, withIntermediateDirectories: true)
                 let p = Process()
                 p.executableURL = URL(fileURLWithPath: exe)
                 p.arguments = args
+                p.currentDirectoryURL = cwd
                 p.standardInput = FileHandle.nullDevice
                 var env = ProcessInfo.processInfo.environment
                 let path = env["PATH"] ?? ""

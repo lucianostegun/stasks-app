@@ -16,7 +16,8 @@ final class OpenAICompatibleClientTests: XCTestCase {
         XCTAssertEqual(req.value(forHTTPHeaderField: "Authorization"), "Bearer sk-x")
         let body = try JSONSerialization.jsonObject(with: bodyData(req)) as! [String: Any]
         XCTAssertEqual(body["model"] as? String, "gpt-5-mini")
-        XCTAssertEqual(body["max_completion_tokens"] as? Int, 60)
+        // Floor leaves room for hidden reasoning tokens; a cap of 60 would come back empty on gpt-5 models.
+        XCTAssertEqual(body["max_completion_tokens"] as? Int, OpenAICompatibleClient.minCompletionTokens)
         XCTAssertNil(body["temperature"])
         let messages = body["messages"] as! [[String: String]]
         XCTAssertEqual(messages.map { $0["role"] }, ["system", "user"])

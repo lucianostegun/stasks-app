@@ -45,12 +45,21 @@ final class SlackReactionMapperTests: XCTestCase {
         XCTAssertEqual(events.count, 1)
     }
 
-    func testVerifyEmojiCounts() throws {
-        let json = #"[{"type":"message","channel":"C9","message":{"ts":"5.0","text":"x","reactions":[{"name":"verify","users":["UME"],"count":1}]}}]"#
+    func testEveryDoneEmojiCounts() throws {
+        for name in ["verify", "heavy_check_mark", "ballot_box_with_check", "white_check_mark", "done", "done-check"] {
+            let json = #"[{"type":"message","channel":"C9","message":{"ts":"5.0","text":"x","reactions":[{"name":"\#(name)","users":["UME"],"count":1}]}}]"#
+            let d = JSONDecoder(); d.keyDecodingStrategy = .convertFromSnakeCase
+            let items = try d.decode([SlackReactionItem].self, from: Data(json.utf8))
+            let events = SlackReactionMapper.events(items: items, selfUserId: "UME", cutoff: .distantPast) { _, _ in .inProgress }
+            XCTAssertEqual(events, [.complete(channelId: "C9", ts: "5.0")], name)
+        }
+    }
+
+    func testUnrelatedEmojiDoesNotComplete() throws {
+        let json = #"[{"type":"message","channel":"C9","message":{"ts":"5.0","text":"x","reactions":[{"name":"thumbsup","users":["UME"],"count":1}]}}]"#
         let d = JSONDecoder(); d.keyDecodingStrategy = .convertFromSnakeCase
         let items = try d.decode([SlackReactionItem].self, from: Data(json.utf8))
-        let events = SlackReactionMapper.events(items: items, selfUserId: "UME", cutoff: .distantPast) { _, _ in .inProgress }
-        XCTAssertEqual(events, [.complete(channelId: "C9", ts: "5.0")])
+        XCTAssertEqual(SlackReactionMapper.events(items: items, selfUserId: "UME", cutoff: .distantPast) { _, _ in .open }, [])
     }
 
     func testTsToDate() {

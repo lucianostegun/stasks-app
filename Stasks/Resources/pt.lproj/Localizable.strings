@@ -67,6 +67,7 @@
 "panel.help.resetHeight" = "Duplo clique: altura automática";
 "panel.help.lifo" = "Mais recente no topo";
 "panel.help.fifo" = "Mais antiga no topo";
+"panel.help.syncSlack" = "Sincronizar com o Slack agora";
 "panel.help.pin" = "Sempre visível";
 "panel.settings" = "Ajustes";
 "panel.empty" = "Nada em aberto";

@@ -11,6 +11,9 @@ final class PanelModel {
     var llmError: String?
     /// True when Slack titles want the LLM but the chosen provider has no usable configuration. Refreshed on launch, on credential save and on provider change.
     var titleProviderUnconfigured = false
+    /// Slack token saved, so the manual sync button makes sense.
+    var slackConfigured = false
+    var isSyncing = false
     var maxListHeight: CGFloat = 500
     /// Set when the user resized the panel; the list then fills the window instead of sizing to content.
     var manualHeight: CGFloat?
@@ -20,6 +23,7 @@ final class PanelModel {
     @ObservationIgnored var onOpenSettings: () -> Void = {}
     @ObservationIgnored var onPinChanged: (Bool) -> Void = { _ in }
     @ObservationIgnored var onResetHeight: () -> Void = {}
+    @ObservationIgnored var onSyncSlack: () async -> Void = {}
     @ObservationIgnored private var ticker: Timer?
 
     init(store: TaskStore, prefs: Preferences) {
@@ -51,4 +55,13 @@ final class PanelModel {
     }
     func remove(_ task: TaskItem) { store.remove(id: task.id) }
     func togglePin() { prefs.pinned.toggle(); onPinChanged(prefs.pinned) }
+
+    func syncSlack() {
+        guard !isSyncing else { return }
+        isSyncing = true
+        Task { @MainActor in
+            await onSyncSlack()
+            isSyncing = false
+        }
+    }
 }

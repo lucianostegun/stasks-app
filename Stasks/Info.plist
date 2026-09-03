@@ -20,6 +20,8 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>
@@ -27,6 +29,6 @@
 	<key>NSAppleEventsUsageDescription</key>
 	<string>Stasks focuses the iTerm2 tab of a Claude Code session when you click a task.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Luciano Stegun</string>
+	<string>© 2026 Volkker Tech</string>
 </dict>
 </plist>
