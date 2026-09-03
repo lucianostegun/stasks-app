@@ -44,6 +44,24 @@ final class InboxDrainerTests: XCTestCase {
         XCTAssertTrue(received.value.isEmpty)
     }
 
+    func testDrainNowKeepsUnreadableProcessingFileForRetry() throws {
+        try XCTSkipIf(getuid() == 0, "root can read mode-000 files, so this test cannot exercise the failure path")
+        let name = "inbox.processing-x.jsonl"
+        try append(#"{"event":"SessionEnd","session_id":"UNREADABLE"}"#, to: name)
+        let url = dir.appendingPathComponent(name)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: url.path)
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: url.path)
+            try? FileManager.default.removeItem(at: url)
+        }
+
+        let received = ThreadSafeBox<[InboxEvent]>([])
+        InboxDrainer(directory: dir, settleDelay: 0) { received.value.append(contentsOf: $0) }.drainNow()
+
+        XCTAssertTrue(received.value.isEmpty)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+    }
+
     func testWatcherDrainsAfterAppend() throws {
         let exp = expectation(description: "drained")
         let received = ThreadSafeBox<[InboxEvent]>([])

@@ -7,7 +7,6 @@ public final class FileWatcher: @unchecked Sendable {
     private let queue: DispatchQueue
     private let onChange: @Sendable () -> Void
     private var source: DispatchSourceFileSystemObject?
-    private var fd: Int32 = -1
     private var retryTimer: DispatchSourceTimer?
 
     public init(url: URL, queue: DispatchQueue = DispatchQueue(label: "stasks.filewatcher", qos: .utility),
@@ -30,7 +29,7 @@ public final class FileWatcher: @unchecked Sendable {
 
     private func open() {
         retryTimer?.cancel(); retryTimer = nil
-        fd = Darwin.open(url.path, O_EVTONLY)
+        let fd = Darwin.open(url.path, O_EVTONLY)
         guard fd >= 0 else { scheduleRetry(); return }
         let src = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: fd, eventMask: [.write, .extend, .rename, .delete, .attrib], queue: queue)

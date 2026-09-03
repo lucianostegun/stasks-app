@@ -10,6 +10,7 @@ public final class InboxDrainer: @unchecked Sendable {
     private let queue = DispatchQueue(label: "stasks.inbox", qos: .utility)
     private var watcher: FileWatcher?
     private var timer: DispatchSourceTimer?
+    private let drainLock = NSLock()
 
     public init(directory: URL, settleDelay: TimeInterval = 0.15, handler: @escaping @Sendable ([InboxEvent]) -> Void) {
         self.directory = directory
@@ -35,8 +36,11 @@ public final class InboxDrainer: @unchecked Sendable {
         timer?.cancel(); timer = nil
     }
 
-    /// Safe to call from any thread; serialized on the drainer queue when called via start().
+    /// Safe to call from any thread; drains are serialized by an internal lock.
     public func drainNow() {
+        drainLock.lock()
+        defer { drainLock.unlock() }
+
         let fm = FileManager.default
         var events: [InboxEvent] = []
 
@@ -66,9 +70,18 @@ public final class InboxDrainer: @unchecked Sendable {
         }
     }
 
+    /// Reads and parses a processing file, deleting it only after a successful read.
+    /// A read failure (e.g. permission denied) is logged and leaves the file in place
+    /// so the next drain retries it, instead of losing the events silently.
     private func consume(_ url: URL) -> [InboxEvent] {
-        defer { try? FileManager.default.removeItem(at: url) }
-        guard let data = try? Data(contentsOf: url) else { return [] }
+        let data: Data
+        do {
+            data = try Data(contentsOf: url)
+        } catch {
+            Log.inbox.error("read failed for \(url.lastPathComponent): \(error.localizedDescription)")
+            return []
+        }
+        try? FileManager.default.removeItem(at: url)
         return InboxParser.parse(data: data)
     }
 }
