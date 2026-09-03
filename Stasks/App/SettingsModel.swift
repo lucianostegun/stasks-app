@@ -1,4 +1,5 @@
 import Foundation
+import Security
 import Observation
 import ServiceManagement
 import StasksCore
@@ -40,6 +41,10 @@ final class SettingsModel {
     }
 
     func installHooks() {
+        guard !hookInstaller.scriptPath.isEmpty else {
+            hookMessage = "Script do hook não encontrado no bundle"
+            return
+        }
         do {
             let backup = try hookInstaller.install()
             hookMessage = "Hooks instalados. Backup: \(backup.lastPathComponent)"
@@ -47,8 +52,19 @@ final class SettingsModel {
         refreshHookStatus()
     }
 
-    func saveSlackToken() { KeychainStore.set(KeychainStore.slackToken, slackToken); onCredentialsChanged() }
-    func saveAnthropicKey() { KeychainStore.set(KeychainStore.anthropicKey, anthropicKey); onCredentialsChanged() }
+    func saveSlackToken() {
+        slackTestResult = Self.saveMessage(KeychainStore.set(KeychainStore.slackToken, slackToken))
+        onCredentialsChanged()
+    }
+
+    func saveAnthropicKey() {
+        anthropicTestResult = Self.saveMessage(KeychainStore.set(KeychainStore.anthropicKey, anthropicKey))
+        onCredentialsChanged()
+    }
+
+    private static func saveMessage(_ status: OSStatus) -> String {
+        status == errSecSuccess ? "Salvo no Keychain" : "Falha ao salvar no Keychain (código \(status))"
+    }
 
     func testSlack() async {
         slackTestResult = "Testando…"

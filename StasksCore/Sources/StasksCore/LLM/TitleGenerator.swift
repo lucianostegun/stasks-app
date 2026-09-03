@@ -12,8 +12,19 @@ public struct TitleGenerator: TitleGenerating {
             let cleaned = TitlePromptBuilder.clean(raw)
             return cleaned.isEmpty ? nil : cleaned
         } catch {
-            Log.llm.error("title generation failed: \(String(describing: error), privacy: .public)")
+            Log.llm.error("title generation failed: \(Self.reason(error), privacy: .public)")
             return nil
+        }
+    }
+
+    /// Never logs response bodies: only the failure kind (and the HTTP status when there is one).
+    private static func reason(_ error: any Error) -> String {
+        switch error as? AnthropicError {
+        case let .http(status, _): return "http \(status)"
+        case .transport: return "transport"
+        case .decoding: return "decoding"
+        case .emptyResponse: return "empty response"
+        case nil: return "unknown"
         }
     }
 }

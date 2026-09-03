@@ -65,7 +65,8 @@ final class InboxDrainerTests: XCTestCase {
     func testWatcherDrainsAfterAppend() throws {
         let exp = expectation(description: "drained")
         let received = ThreadSafeBox<[InboxEvent]>([])
-        let d = InboxDrainer(directory: dir, settleDelay: 0) { events in
+        // settleDelay > 0 so the non-atomic append helper cannot race the drain.
+        let d = InboxDrainer(directory: dir, settleDelay: 0.05) { events in
             received.value.append(contentsOf: events)
             if !events.isEmpty { exp.fulfill() }
         }

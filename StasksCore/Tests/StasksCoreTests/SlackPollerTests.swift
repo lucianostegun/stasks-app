@@ -50,7 +50,9 @@ final class SlackPollerTests: XCTestCase {
     }
 
     func poller() -> SlackPoller {
-        SlackPoller(store: store, stateURL: stateURL, clientProvider: { [slack] in slack }, titleGenerator: titles, now: { [now] in now })
+        let p = SlackPoller(store: store, stateURL: stateURL, clientProvider: { [slack] in slack }, titleGenerator: titles, now: { [now] in now })
+        p.awaitTitleGeneration = true
+        return p
     }
 
     func items(_ json: String) -> [SlackReactionItem] {
@@ -137,5 +139,34 @@ final class SlackPollerTests: XCTestCase {
         _ = await (a, b)
         XCTAssertEqual(slack.calls.filter { $0 == "list" }.count, 1)
         XCTAssertEqual(store.tasks.count, 1)
+    }
+
+    // MARK: Provisional title retry (spec section 6)
+
+    private func seedProvisionalSlackTask(pinned: Bool) -> TaskItem {
+        var t = TaskItem.slack(teamId: "T1", channelId: "C1", channelName: "eng-backend", ts: "1788300000.1",
+                               permalink: "https://p", text: "Please review the PR", author: "Ana", isDM: false, now: now)
+        t.isPinnedTitle = pinned
+        store.add(t)
+        return t
+    }
+
+    func testRetryProvisionalTitlesRegeneratesTitle() async {
+        let t = seedProvisionalSlackTask(pinned: false)
+        titles.result = "Retried"
+        await poller().retryProvisionalTitles()
+        let updated = store.task(id: t.id)
+        XCTAssertEqual(updated?.title, "Retried")
+        XCTAssertEqual(updated?.isProvisionalTitle, false)
+        XCTAssertEqual(titles.received, ["eng-backend|Ana|Please review the PR|0"])
+    }
+
+    func testRetryProvisionalTitlesSkipsPinnedTask() async {
+        let t = seedProvisionalSlackTask(pinned: true)
+        let before = store.task(id: t.id)?.title
+        titles.result = "Retried"
+        await poller().retryProvisionalTitles()
+        XCTAssertEqual(store.task(id: t.id)?.title, before)
+        XCTAssertTrue(titles.received.isEmpty)
     }
 }

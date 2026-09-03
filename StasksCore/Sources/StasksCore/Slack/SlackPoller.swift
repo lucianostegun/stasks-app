@@ -34,6 +34,8 @@ public final class SlackPoller {
     @ObservationIgnored private let cacheTTL: TimeInterval = 3600
     @ObservationIgnored private let maxDelay: TimeInterval = 300
     @ObservationIgnored public var threadContextLimit = 15
+    /// Tests set this so `createTask` awaits the background title generation before returning.
+    @ObservationIgnored public var awaitTitleGeneration = false
 
     public init(store: TaskStore, stateURL: URL, clientProvider: @escaping @Sendable () -> (any SlackAPI)?,
                 titleGenerator: (any TitleGenerating)?, interval: TimeInterval = 15,
@@ -76,8 +78,8 @@ public final class SlackPoller {
     // MARK: Poll
 
     public func pollOnce() async {
-        guard let client = clientProvider() else { connectionState = .idle; return }
         if authFailed { return }
+        guard let client = clientProvider() else { connectionState = .idle; return }
         guard !isPolling else { return }
         isPolling = true
         defer { isPolling = false }
@@ -136,17 +138,36 @@ public final class SlackPoller {
         Log.slack.info("created task for \(channelId, privacy: .public):\(message.ts, privacy: .public)")
 
         guard let titleGenerator else { return }
-        var thread: [(author: String, text: String)] = []
-        if let threadTs = message.threadTs, let replies = try? await client.replies(channel: channelId, threadTs: threadTs, limit: threadContextLimit) {
-            for r in replies where r.ts != message.ts {
-                let name = r.user.flatMap { userCache[$0]?.0.bestName } ?? r.user ?? "?"
-                thread.append((author: name, text: r.text ?? ""))
+        // Title generation runs in background so it never delays the rest of the poll cycle.
+        let work = Task { @MainActor [weak self] in
+            guard let self else { return }
+            var thread: [(author: String, text: String)] = []
+            if let threadTs = message.threadTs, let replies = try? await client.replies(channel: channelId, threadTs: threadTs, limit: self.threadContextLimit) {
+                for r in replies where r.ts != message.ts {
+                    let name = r.user.flatMap { self.userCache[$0]?.0.bestName } ?? r.user ?? "?"
+                    thread.append((author: name, text: r.text ?? ""))
+                }
+            }
+            if let generated = await titleGenerator.title(channel: channelName, author: authorName, text: text, thread: thread) {
+                if let current = self.store.task(id: task.id), !current.isPinnedTitle {
+                    self.store.setTitle(id: task.id, generated, pinned: false)
+                }
             }
         }
-        if let generated = await titleGenerator.title(channel: channelName, author: authorName, text: text, thread: thread) {
-            if let current = store.task(id: task.id), !current.isPinnedTitle {
-                store.setTitle(id: task.id, generated, pinned: false)
-            }
+        if awaitTitleGeneration { await work.value }
+    }
+
+    /// Spec section 6: on panel show, retry the LLM title for Slack tasks still on their provisional title.
+    public func retryProvisionalTitles() async {
+        guard let titleGenerator else { return }
+        for task in store.tasks {
+            guard case let .slack(_, _, channelName, _, _) = task.source else { continue }
+            guard task.isProvisionalTitle, !task.isPinnedTitle else { continue }
+            let parts = task.subtitle?.components(separatedBy: " · ") ?? []
+            let author = parts.count > 1 ? parts[parts.count - 1] : "?"
+            guard let generated = await titleGenerator.title(channel: channelName, author: author, text: task.title, thread: []) else { continue }
+            guard let current = store.task(id: task.id), !current.isPinnedTitle else { continue }
+            store.setTitle(id: task.id, generated, pinned: false)
         }
     }
 

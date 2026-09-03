@@ -17,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var poller: SlackPoller!
     private let hotKey = HotKeyManager()
     private var purgeTimer: Timer?
+    private var watchedSessionIds: Set<String> = []
     var settingsModel: SettingsModel?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -35,6 +36,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupHotKey()
         setupLifecycle()
         observeStore()
+        observePoller()
+        if prefs.pinned { panel.show(anchor: statusItem.button) }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -46,11 +49,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupPanel() {
         model = PanelModel(store: store, prefs: prefs)
-        panel = PanelController(content: StackPanelView(model: model), preferences: prefs, stateURL: stateURL)
+        panel = PanelController(content: StackPanelView(model: model), preferences: prefs)
         model.maxListHeight = panel.maxListHeight
         model.onSizeChange = { [weak self] in self?.panel.contentSizeChanged($0) }
         model.onPinChanged = { [weak self] in self?.panel.setPinned($0) }
         model.onOpenSettings = { [weak self] in self?.openSettings() }
+        panel.onShow = { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                await self.poller.retryProvisionalTitles()
+            }
+        }
     }
 
     private func setupStatusItem() {
@@ -67,10 +76,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func observeStore() {
         withObservationTracking {
             statusItem.update(count: store.activeCount, hasError: model.errorBanner != nil)
-            model.slackState = poller.connectionState
             syncTranscriptWatchers()
         } onChange: { [weak self] in
             Task { @MainActor in self?.observeStore() }
+        }
+    }
+
+    /// Kept separate from `observeStore` so mirroring the poller state does not invalidate the store tracking.
+    private func observePoller() {
+        withObservationTracking {
+            model.slackState = poller.connectionState
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                self.statusItem.update(count: self.store.activeCount, hasError: self.model.errorBanner != nil)
+                self.observePoller()
+            }
         }
     }
 
@@ -91,17 +112,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func syncTranscriptWatchers() {
+        var wanted: Set<String> = []
         for t in store.tasks {
             guard case let .claude(sessionId, path, _, _) = t.source else { continue }
-            if t.status.isActive { transcripts.watch(sessionId: sessionId, path: path) } else { transcripts.unwatch(sessionId: sessionId) }
+            if t.status.isActive {
+                transcripts.watch(sessionId: sessionId, path: path)
+                wanted.insert(sessionId)
+            } else {
+                transcripts.unwatch(sessionId: sessionId)
+            }
         }
+        // A removed task leaves no row to iterate, so unwatch anything no longer wanted.
+        for stale in watchedSessionIds.subtracting(wanted) { transcripts.unwatch(sessionId: stale) }
+        watchedSessionIds = wanted
     }
 
     // MARK: Slack + LLM
 
     private func setupSlack() {
-        let prefs = self.prefs
-        let titles: (any TitleGenerating)? = LLMTitleGate(prefs: prefs)
+        let titles: (any TitleGenerating)? = LLMTitleGate(
+            isEnabled: { await MainActor.run { Preferences.shared.llmEnabled } },
+            onOutcome: { [weak self] ok in
+                Task { @MainActor in self?.model.llmError = ok ? nil : "Anthropic: falha ao gerar título" }
+            })
         poller = SlackPoller(store: store, stateURL: stateURL, clientProvider: {
             guard let token = KeychainStore.get(KeychainStore.slackToken), !token.isEmpty else { return nil }
             return SlackClient(token: token)
@@ -110,12 +143,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// Reads the key and toggle at call time so Settings changes apply without restart.
+    /// `onOutcome(false)` means Anthropic was configured and enabled but generation failed, which is what the red dot reports.
     private struct LLMTitleGate: TitleGenerating {
-        let prefs: Preferences
+        let isEnabled: @Sendable () async -> Bool
+        let onOutcome: @Sendable (Bool) -> Void
         func title(channel: String, author: String, text: String, thread: [(author: String, text: String)]) async -> String? {
-            let enabled = await MainActor.run { prefs.llmEnabled }
-            guard enabled, let key = KeychainStore.get(KeychainStore.anthropicKey), !key.isEmpty else { return nil }
-            return await TitleGenerator(client: AnthropicClient(apiKey: key)).title(channel: channel, author: author, text: text, thread: thread)
+            guard await isEnabled(), let key = KeychainStore.get(KeychainStore.anthropicKey), !key.isEmpty else { return nil }
+            let generated = await TitleGenerator(client: AnthropicClient(apiKey: key)).title(channel: channel, author: author, text: text, thread: thread)
+            onOutcome(generated != nil)
+            return generated
         }
     }
 
@@ -156,7 +192,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             MainActor.assumeIsolated { self?.poller.pause() }
         }
         nc.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.poller.resume(); self?.drainer.drainNow() }
+            MainActor.assumeIsolated { self?.poller.resume(); self?.drainer.drainSoon() }
         }
         purgeTimer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.store.purgeCompleted(olderThanDays: 7) }

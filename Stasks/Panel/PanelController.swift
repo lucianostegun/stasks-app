@@ -6,7 +6,6 @@ import StasksCore
 final class PanelController {
     private let window = StackPanelWindow()
     private let preferences: Preferences
-    private let stateURL: URL
     private var globalMonitor: Any?
     private var localMonitor: Any?
     private var lastAnchorFrame: NSRect?
@@ -15,11 +14,12 @@ final class PanelController {
     private var savedOrigin: CGPoint?
 
     var isVisible: Bool { window.isVisible }
+    /// Called at the end of every `show`, so the app can refresh on-demand work such as provisional title retries.
+    var onShow: (() -> Void)?
 
-    init(content: some View, preferences: Preferences, stateURL: URL) {
+    init(content: some View, preferences: Preferences) {
         self.preferences = preferences
-        self.stateURL = stateURL
-        self.savedOrigin = AppState.load(from: stateURL, now: Date()).panelOrigin
+        self.savedOrigin = preferences.panelOrigin
 
         let effect = NSVisualEffectView()
         effect.material = .hudWindow
@@ -60,6 +60,7 @@ final class PanelController {
         layout()
         window.makeKeyAndOrderFront(nil)
         installMonitors()
+        onShow?()
     }
 
     func hide() {
@@ -70,6 +71,7 @@ final class PanelController {
     func setPinned(_ pinned: Bool) {
         window.level = pinned ? .floating : .popUpMenu
         window.isMovableByWindowBackground = pinned
+        window.hidesOnDeactivate = !pinned
         if isVisible { layout() }
         if !pinned { installMonitors() } else { removeMonitors() }
     }
@@ -108,9 +110,7 @@ final class PanelController {
     private func persistOrigin() {
         guard preferences.pinned else { return }
         savedOrigin = window.frame.origin
-        var s = AppState.load(from: stateURL, now: Date())
-        s.panelOrigin = window.frame.origin
-        try? s.save(to: stateURL)
+        preferences.panelOrigin = window.frame.origin
     }
 
     // MARK: Click outside
@@ -121,7 +121,10 @@ final class PanelController {
             Task { @MainActor in self?.hide() }
         }
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
-            guard let self, self.isVisible, event.window != self.window, event.window != self.anchorWindow else { return event }
+            guard let self, self.isVisible else { return event }
+            let anchor = self.anchorWindow
+            let isInside = event.window == self.window || (anchor != nil && event.window == anchor)
+            if isInside { return event }
             self.hide()
             return event
         }

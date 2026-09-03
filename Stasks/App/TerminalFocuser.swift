@@ -13,6 +13,8 @@ enum TerminalFocuser {
     }
 
     static func focusITerm(uuid: String) -> Bool {
+        // The UUID is interpolated into an AppleScript string literal, so allow only hex digits and dashes.
+        guard !uuid.isEmpty, uuid.allSatisfy({ $0.isHexDigit || $0 == "-" }) else { return false }
         let script = """
         tell application "iTerm2"
             repeat with w in windows

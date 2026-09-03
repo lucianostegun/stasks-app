@@ -69,6 +69,15 @@ struct StackPanelView: View {
         .animation(.spring(duration: 0.25), value: active.map(\.id))
         .animation(.spring(duration: 0.25), value: completed.map(\.id))
         .onGeometryChange(for: CGSize.self) { $0.size } action: { model.onSizeChange($0) }
+        .overlay(settingsShortcut)
+    }
+
+    /// Invisible button so ⌘, opens Settings while the panel is the key window.
+    private var settingsShortcut: some View {
+        Button("") { model.onOpenSettings() }
+            .keyboardShortcut(",", modifiers: .command)
+            .opacity(0)
+            .frame(width: 0, height: 0)
     }
 
     private var newField: some View {

@@ -36,6 +36,12 @@ public final class InboxDrainer: @unchecked Sendable {
         timer?.cancel(); timer = nil
     }
 
+    /// Schedules a drain on the drainer's own queue, so callers on the main thread never block
+    /// on the settle sleep or the file IO.
+    public func drainSoon() {
+        queue.async { [self] in drainNow() }
+    }
+
     /// Safe to call from any thread; drains are serialized by an internal lock.
     public func drainNow() {
         drainLock.lock()

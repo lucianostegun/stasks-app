@@ -42,6 +42,16 @@ final class Preferences {
     var hotKey: HotKeyChoice { didSet { d.set(hotKey.rawValue, forKey: "hotKey") } }
     var pinned: Bool { didSet { d.set(pinned, forKey: "pinned") } }
     var completedCollapsed: Bool { didSet { d.set(completedCollapsed, forKey: "completedCollapsed") } }
+    /// Persisted as two Doubles so the panel origin never contends with state.json, which the Slack poller also writes.
+    var panelOrigin: CGPoint? {
+        didSet {
+            if let o = panelOrigin {
+                d.set(Double(o.x), forKey: "panelOriginX"); d.set(Double(o.y), forKey: "panelOriginY")
+            } else {
+                d.removeObject(forKey: "panelOriginX"); d.removeObject(forKey: "panelOriginY")
+            }
+        }
+    }
 
     private init() {
         order = StackOrder(rawValue: d.string(forKey: "order") ?? "") ?? .lifo
@@ -51,5 +61,10 @@ final class Preferences {
         hotKey = HotKeyChoice(rawValue: d.string(forKey: "hotKey") ?? "") ?? .optCmdS
         pinned = d.bool(forKey: "pinned")
         completedCollapsed = d.object(forKey: "completedCollapsed") as? Bool ?? true
+        if let x = d.object(forKey: "panelOriginX") as? Double, let y = d.object(forKey: "panelOriginY") as? Double {
+            panelOrigin = CGPoint(x: x, y: y)
+        } else {
+            panelOrigin = nil
+        }
     }
 }

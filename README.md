@@ -1,6 +1,13 @@
 # Stasks
 
-Stasks is a macOS menu bar app that surfaces Claude Code session tasks and focuses the matching iTerm2 tab when you click one.
+Stasks is a macOS menu bar app that keeps one stack of tasks from three sources: Claude Code sessions (via hooks), Slack messages you react to with 👀, and tasks you type by hand in the panel. Clicking a Claude task focuses the matching iTerm2 tab; clicking a Slack task opens the message in Slack.
+
+## Requirements
+
+- macOS with iTerm2 for Claude task focusing.
+- `jq` on `PATH`: the Claude hook parses its payload with `jq` and exits silently when it is missing, so no Claude tasks appear.
+- The first click on a Claude task triggers a macOS Automation (Apple Events) prompt for iTerm2. It must be allowed, otherwise focusing silently falls back to opening the project folder in Finder.
+- The app is signed ad hoc, so Keychain and Automation prompts can reappear after every rebuild.
 
 ## Make targets
 

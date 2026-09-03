@@ -97,12 +97,14 @@ public final class TaskStore {
         saveTask = Task {
             try? await Task.sleep(nanoseconds: delay)
             guard !Task.isCancelled else { return }
-            try? persistence?.save(snapshot)
+            do { try persistence?.save(snapshot) }
+            catch { Log.ui.error("task save failed: \(error.localizedDescription, privacy: .public)") }
         }
     }
 
     public func flush() {
         saveTask?.cancel()
-        try? persistence?.save(tasks)
+        do { try persistence?.save(tasks) }
+        catch { Log.ui.error("task save failed: \(error.localizedDescription, privacy: .public)") }
     }
 }

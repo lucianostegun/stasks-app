@@ -1,5 +1,6 @@
 import Foundation
 import Security
+import StasksCore
 
 enum KeychainStore {
     static let service = "com.lucianostegun.stasks"
@@ -14,14 +15,18 @@ enum KeychainStore {
         return String(data: data, encoding: .utf8)
     }
 
-    static func set(_ key: String, _ value: String) {
+    /// Returns the OSStatus of the write, or `errSecSuccess` when clearing an empty value.
+    @discardableResult
+    static func set(_ key: String, _ value: String) -> OSStatus {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { delete(key); return }
+        guard !trimmed.isEmpty else { delete(key); return errSecSuccess }
         delete(key)
         let add: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
                                   kSecAttrAccount as String: key, kSecValueData as String: Data(trimmed.utf8),
                                   kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked]
-        SecItemAdd(add as CFDictionary, nil)
+        let status = SecItemAdd(add as CFDictionary, nil)
+        if status != errSecSuccess { Log.ui.error("keychain write failed for \(key, privacy: .public): \(status, privacy: .public)") }
+        return status
     }
 
     static func delete(_ key: String) {
