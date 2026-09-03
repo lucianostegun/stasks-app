@@ -3,8 +3,10 @@ import SwiftUI
 import StasksCore
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let prefs = Preferences.shared
+    private var settingsWindow: NSWindow?
+    private var hooksMenuItem: NSMenuItem?
     private let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Stasks")
     private var stateURL: URL { supportDir.appendingPathComponent("state.json") }
 
@@ -64,11 +66,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupStatusItem() {
         let menu = NSMenu()
-        menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",").target = self
-        menu.addItem(withTitle: "Instalar hooks do Claude", action: #selector(installHooks), keyEquivalent: "").target = self
+        menu.autoenablesItems = false
+        menu.delegate = self
+        menu.addItem(withTitle: "Ajustes…", action: #selector(openSettings), keyEquivalent: ",").target = self
+        let hooks = menu.addItem(withTitle: "Instalar hooks do Claude", action: #selector(installHooks), keyEquivalent: "")
+        hooks.target = self
+        hooksMenuItem = hooks
         menu.addItem(.separator())
         menu.addItem(withTitle: "Sair", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         statusItem = StatusItemController(onToggle: { [weak self] in self?.togglePanel() }, menu: menu)
+    }
+
+    /// The hooks item reflects the real state of ~/.claude/settings.json every time the menu opens.
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        guard let item = hooksMenuItem, let sm = settingsModel else { return }
+        sm.refreshHookStatus()
+        switch sm.hookStatus {
+        case .installed:
+            item.title = "Hooks do Claude instalados"
+            item.isEnabled = false
+        case .outdated:
+            item.title = "Atualizar hooks do Claude"
+            item.isEnabled = true
+        case .missing:
+            item.title = "Instalar hooks do Claude"
+            item.isEnabled = true
+        }
     }
 
     private func togglePanel() { panel.toggle(anchor: statusItem.button) }
@@ -169,9 +192,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsModel = sm
     }
 
+    /// Owns its own window: the SwiftUI `Settings` scene's `showSettingsWindow:` selector does not
+    /// respond in an accessory (LSUIElement) app driven from a status item.
     @objc func openSettings() {
+        guard let sm = settingsModel else { return }
+        if settingsWindow == nil {
+            let host = NSHostingController(rootView: SettingsView(model: sm))
+            let w = NSWindow(contentViewController: host)
+            w.title = "Stasks"
+            w.styleMask = [.titled, .closable, .miniaturizable]
+            w.isReleasedWhenClosed = false
+            w.center()
+            settingsWindow = w
+        }
+        sm.refreshHookStatus()
         NSApp.activate(ignoringOtherApps: true)
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        settingsWindow?.makeKeyAndOrderFront(nil)
     }
 
     @objc private func installHooks() {

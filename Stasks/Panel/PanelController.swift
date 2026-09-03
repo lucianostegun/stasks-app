@@ -25,10 +25,9 @@ final class PanelController {
         effect.material = .hudWindow
         effect.blendingMode = .behindWindow
         effect.state = .active
-        effect.wantsLayer = true
-        effect.layer?.cornerRadius = Theme.cornerRadius
-        effect.layer?.cornerCurve = .continuous
-        effect.layer?.masksToBounds = true
+        // A layer corner radius does not clip a behind-window blur: the WindowServer draws the blur
+        // and the window shadow for the full rect. maskImage is the supported way to shape both.
+        effect.maskImage = Self.roundedMask(radius: Theme.cornerRadius)
 
         let hosting = NSHostingView(rootView: content)
         hosting.translatesAutoresizingMaskIntoConstraints = false
@@ -100,6 +99,20 @@ final class PanelController {
             origin.y = min(max(origin.y, v.minY + 8), v.maxY - size.height - 8)
         }
         window.setFrame(NSRect(origin: origin, size: size), display: true, animate: animated && isVisible)
+        window.invalidateShadow()
+    }
+
+    /// Stretchable rounded-rect mask; the corners stay crisp at any panel size thanks to capInsets.
+    private static func roundedMask(radius: CGFloat) -> NSImage {
+        let side = radius * 2 + 1
+        let image = NSImage(size: NSSize(width: side, height: side), flipped: false) { rect in
+            NSColor.black.setFill()
+            NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).fill()
+            return true
+        }
+        image.capInsets = NSEdgeInsets(top: radius, left: radius, bottom: radius, right: radius)
+        image.resizingMode = .stretch
+        return image
     }
 
     var maxListHeight: CGFloat {
