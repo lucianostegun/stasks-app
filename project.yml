@@ -1,0 +1,41 @@
+name: Stasks
+options:
+  bundleIdPrefix: com.lucianostegun
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+packages:
+  StasksCore:
+    path: StasksCore
+targets:
+  Stasks:
+    type: application
+    platform: macOS
+    sources:
+      - path: Stasks
+      - path: hooks/stasks-hook.sh
+        buildPhase: resources
+    dependencies:
+      - package: StasksCore
+    info:
+      path: Stasks/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleDisplayName: Stasks
+        CFBundleName: Stasks
+        NSAppleEventsUsageDescription: Stasks focuses the iTerm2 tab of a Claude Code session when you click a task.
+        NSHumanReadableCopyright: Luciano Stegun
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lucianostegun.stasks
+        PRODUCT_NAME: Stasks
+        SWIFT_VERSION: "5"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        ENABLE_HARDENED_RUNTIME: NO
+        DEVELOPMENT_TEAM: ""
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_STRICT_CONCURRENCY: minimal
