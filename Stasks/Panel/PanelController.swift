@@ -55,6 +55,15 @@ final class PanelController {
         nc.addObserver(forName: NSWindow.didResizeNotification, object: window, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.window.invalidateShadow() }
         }
+        // Never use hidesOnDeactivate here: a window hidden that way only comes back when the app
+        // activates, and the status item button is non-activating, so the panel would stay gone.
+        // Hiding on app deactivation (Cmd-Tab away) is done explicitly instead, unpinned only.
+        nc.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, !self.preferences.pinned, self.isVisible else { return }
+                self.hide()
+            }
+        }
         setPinned(preferences.pinned)
     }
 
@@ -81,7 +90,6 @@ final class PanelController {
     func setPinned(_ pinned: Bool) {
         window.level = pinned ? .floating : .popUpMenu
         window.isMovableByWindowBackground = pinned
-        window.hidesOnDeactivate = !pinned
         if isVisible { layout() }
         if !pinned { installMonitors() } else { removeMonitors() }
     }
