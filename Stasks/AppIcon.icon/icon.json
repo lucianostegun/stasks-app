@@ -20,7 +20,19 @@
       "blur-material" : null,
       "layers" : [
         {
+          "image-name" : "Codex Image Sep 3, 2026, 10_49_42 AM.png",
+          "name" : "Codex Image Sep 3, 2026, 10_49_42 AM",
+          "position" : {
+            "scale" : 0.7,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
           "glass" : true,
+          "hidden" : true,
           "image-name" : "Codex Image Sep 3, 2026, 10_16_58 AM.png",
           "name" : "Codex Image Sep 3, 2026, 10_16_58 AM",
           "position" : {
@@ -32,20 +44,12 @@
           }
         }
       ],
-      "lighting" : "individual",
+      "lighting" : "combined",
       "shadow" : {
         "kind" : "neutral",
         "opacity" : 0.5
       },
-      "specular-specializations" : [
-        {
-          "value" : false
-        },
-        {
-          "appearance" : "light",
-          "value" : false
-        }
-      ],
+      "specular" : true,
       "translucency" : {
         "enabled" : true,
         "value" : 0.25
