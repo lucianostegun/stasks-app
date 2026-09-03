@@ -1,0 +1,87 @@
+/* Language names */
+"language.system" = "Sistema";
+
+/* Common */
+"common.save" = "Salvar";
+"common.test" = "Testar";
+"common.testing" = "Testando…";
+"common.failure" = "Falha: %@";
+
+/* Settings */
+"settings.tab.general" = "Geral";
+"settings.language" = "Idioma";
+"settings.order" = "Ordem da pilha";
+"settings.order.lifo" = "LIFO (mais recente no topo)";
+"settings.order.fifo" = "FIFO (mais antiga no topo)";
+"settings.hideDoneAfter" = "Esconder concluídas após %dh";
+"settings.hotKey" = "Atalho global";
+"settings.launchAtLogin" = "Abrir no login";
+"settings.claude.hooks" = "Hooks do Claude Code";
+"settings.claude.hooks.installed" = "Instalados";
+"settings.claude.hooks.outdated" = "Desatualizados";
+"settings.claude.hooks.missing" = "Ausentes";
+"settings.claude.install" = "Instalar hooks";
+"settings.claude.reinstall" = "Reinstalar hooks";
+"settings.claude.inbox" = "Inbox";
+"settings.claude.openLogs" = "Abrir logs no Console";
+"settings.claude.scriptMissing" = "Script do hook não encontrado no bundle";
+"settings.claude.hooksInstalled" = "Hooks instalados. Backup: %@";
+"settings.slack.token" = "User token (xoxp-…)";
+"settings.slack.polling" = "Polling: %ds";
+"settings.slack.ok" = "OK: %@ como @%@";
+"settings.keychain.saved" = "Salvo no Keychain";
+"settings.keychain.failed" = "Falha ao salvar no Keychain (código %d)";
+
+/* Titles */
+"settings.tab.titles" = "Títulos";
+"settings.titles.enabled" = "Gerar títulos das tarefas do Slack com LLM";
+"settings.titles.provider" = "Provedor";
+"settings.titles.apiKey" = "Chave de API";
+"settings.titles.baseURL" = "URL base";
+"settings.titles.model" = "Modelo";
+"settings.titles.model.fixed" = "Modelo: %@";
+"settings.titles.claudePath" = "Executável claude";
+"settings.titles.claudePath.auto" = "Detectar automaticamente";
+"settings.titles.claudePath.detected" = "Usando";
+"settings.titles.claudeNotFound" = "claude não encontrado. Instale o Claude Code ou informe o caminho acima.";
+"settings.titles.notConfigured" = "Provedor não configurado";
+"settings.titles.hint.openAI" = "Funciona com OpenAI, Ollama (http://localhost:11434/v1, sem chave), Groq, OpenRouter.";
+"settings.titles.hint.claudeCode" = "Usa seu login do Claude Code, sem chave de API. Roda `claude -p` por título, cerca de 3s, com hooks desligados.";
+
+/* Sounds */
+"settings.tab.sounds" = "Sons";
+"settings.sounds.enabled" = "Tocar um som quando uma tarefa pedir atenção";
+"settings.sounds.sound" = "Som";
+"settings.sounds.volume" = "Volume: %d%%";
+"settings.sounds.preview" = "Ouvir";
+"settings.sounds.hint" = "Toca quando o Claude Code pede permissão ou input (a linha pulsa em âmbar).";
+
+/* Status item menu */
+"menu.settings" = "Ajustes…";
+"menu.hooks.install" = "Instalar hooks do Claude";
+"menu.hooks.update" = "Atualizar hooks do Claude";
+"menu.hooks.installed" = "Hooks do Claude instalados";
+"menu.quit" = "Sair";
+
+/* Panel */
+"panel.help.resetHeight" = "Duplo clique: altura automática";
+"panel.help.lifo" = "Mais recente no topo";
+"panel.help.fifo" = "Mais antiga no topo";
+"panel.help.pin" = "Sempre visível";
+"panel.settings" = "Ajustes";
+"panel.empty" = "Nada em aberto";
+"panel.completed" = "Concluídas";
+"panel.newTask.placeholder" = "Nova tarefa…";
+"panel.slackDisconnected" = "Slack desconectado (%@)";
+"panel.titlesUnconfigured" = "Títulos: provedor não configurado";
+"panel.llmError" = "Anthropic: falha ao gerar título";
+
+/* Task row */
+"task.title.placeholder" = "Título";
+"task.openSource" = "Abrir origem";
+"task.rename" = "Editar título";
+"task.remove" = "Remover";
+"status.open" = "Aberta";
+"status.inProgress" = "Em andamento";
+"status.done" = "Concluída";
+"time.now" = "agora";

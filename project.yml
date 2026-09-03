@@ -1,6 +1,7 @@
 name: Stasks
 options:
-  bundleIdPrefix: com.lucianostegun
+  bundleIdPrefix: com.volkker
+  developmentLanguage: en
   deploymentTarget:
     macOS: "15.0"
   createIntermediateGroups: true
@@ -33,7 +34,7 @@ targets:
         LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.lucianostegun.stasks
+        PRODUCT_BUNDLE_IDENTIFIER: com.volkker.stasks.app
         PRODUCT_NAME: Stasks
         SWIFT_VERSION: "5"
         MARKETING_VERSION: "0.1.0"

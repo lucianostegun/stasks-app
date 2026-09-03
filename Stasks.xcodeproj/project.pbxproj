@@ -7,11 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1E21AA8E76BE886EA34B202F /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = C06BEC1EC53ECE3A09A91862 /* L10n.swift */; };
 		1F4AAD7371813D73D48EB1D7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C19676B964487247C4347378 /* AppDelegate.swift */; };
 		22BC0C0635C378444AE2AC5B /* PanelHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EA7E8FA0160F1F3BFB0E1DB /* PanelHeaderView.swift */; };
+		2E26689D37DC092F2F179DE8 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9202DCE24ACCEEDAA53A318 /* AppLanguage.swift */; };
 		31F41E0952AB80B690E29D0C /* StasksCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA427AE3F8ED672E503F52A /* StasksCore */; };
 		4162082B14FAE14CEABCFCC9 /* stasks-hook.sh in Resources */ = {isa = PBXBuildFile; fileRef = 1D6D92AFC30DF2754163EA21 /* stasks-hook.sh */; };
 		445FD1A470F8E96768A8B884 /* PanelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1196E0AEA657742777C6D3B9 /* PanelModel.swift */; };
+		52EABB5ABBCAD404BF332916 /* TitleClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4FE3799A9DC83F4D1A209 /* TitleClientFactory.swift */; };
 		56BCB46766E2603DB8E9814B /* TerminalFocuser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915A4B3B7E0A119377531757 /* TerminalFocuser.swift */; };
 		6C8E1E75095359C4830118D0 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F335E6CEC7F86479D4DDDEE /* Preferences.swift */; };
 		72D7BB7584FFF668075F4742 /* PanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D7CC2BD6F22FCAAC115793C /* PanelController.swift */; };
@@ -21,6 +24,8 @@
 		A097E946F9DF3A8B4AEDFE85 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B35586605A0ABB73F0E370B /* SettingsView.swift */; };
 		A24F5025AE9E9A2CF6C58324 /* StackPanelWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B169C20CBF568D6AD079D07B /* StackPanelWindow.swift */; };
 		B4C7FB3DD94A8DA427CAA838 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00311D24C5B2D5161CCB8B5 /* HotKeyManager.swift */; };
+		C09ECE37E445690FFE2E766F /* AttentionSound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4318B5CA1399736E344D81D0 /* AttentionSound.swift */; };
+		C2808A39D23D37598391C078 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3C9602C509460665BA498AB4 /* Localizable.strings */; };
 		C4BDB748472CEEF48625D095 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C773BF3E27136F4EE3C7530A /* KeychainStore.swift */; };
 		CB7495525D195D1FD3F70F97 /* StasksApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6572C4902BF28E882500E54C /* StasksApp.swift */; };
 		D597953AF011CCD082A056E2 /* SourceOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802AE503F60A0CA807E86D27 /* SourceOpener.swift */; };
@@ -33,8 +38,13 @@
 /* Begin PBXFileReference section */
 		1196E0AEA657742777C6D3B9 /* PanelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelModel.swift; sourceTree = "<group>"; };
 		1D6D92AFC30DF2754163EA21 /* stasks-hook.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "stasks-hook.sh"; sourceTree = "<group>"; };
+		20F4FE3799A9DC83F4D1A209 /* TitleClientFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleClientFactory.swift; sourceTree = "<group>"; };
 		226B41948E0E7A472FA63CC9 /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
+		243A06244829CD91D112E2E5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		255398EDE594B2EFFBEC3996 /* NewTaskField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTaskField.swift; sourceTree = "<group>"; };
+		33D6B30C032693EE1C30C589 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		34D38D4493B290260571A4FB /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
+		4318B5CA1399736E344D81D0 /* AttentionSound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionSound.swift; sourceTree = "<group>"; };
 		46FDEBB5D4712DB866FAB101 /* TaskRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowView.swift; sourceTree = "<group>"; };
 		4B35586605A0ABB73F0E370B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		4D7CC2BD6F22FCAAC115793C /* PanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelController.swift; sourceTree = "<group>"; };
@@ -50,9 +60,12 @@
 		AFFBFE7CBDD29870C0C6D079 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		B169C20CBF568D6AD079D07B /* StackPanelWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackPanelWindow.swift; sourceTree = "<group>"; };
 		B2C7FEFEA7B066E287B99502 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		C06BEC1EC53ECE3A09A91862 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		C19676B964487247C4347378 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C773BF3E27136F4EE3C7530A /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		C9202DCE24ACCEEDAA53A318 /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		E00311D24C5B2D5161CCB8B5 /* HotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyManager.swift; sourceTree = "<group>"; };
+		E6981E77153210D25750D549 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		EE434B4EFE9FFE3CC8D46AFA /* StackPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackPanelView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -82,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				C19676B964487247C4347378 /* AppDelegate.swift */,
+				4318B5CA1399736E344D81D0 /* AttentionSound.swift */,
 				E00311D24C5B2D5161CCB8B5 /* HotKeyManager.swift */,
 				C773BF3E27136F4EE3C7530A /* KeychainStore.swift */,
 				6F335E6CEC7F86479D4DDDEE /* Preferences.swift */,
@@ -89,6 +103,7 @@
 				802AE503F60A0CA807E86D27 /* SourceOpener.swift */,
 				6572C4902BF28E882500E54C /* StasksApp.swift */,
 				915A4B3B7E0A119377531757 /* TerminalFocuser.swift */,
+				20F4FE3799A9DC83F4D1A209 /* TitleClientFactory.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -133,13 +148,24 @@
 			path = hooks;
 			sourceTree = "<group>";
 		};
+		7F3F552284805CF274EB5898 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				C9202DCE24ACCEEDAA53A318 /* AppLanguage.swift */,
+				C06BEC1EC53ECE3A09A91862 /* L10n.swift */,
+			);
+			path = Localization;
+			sourceTree = "<group>";
+		};
 		814362A8A4F986305F0E169D /* Stasks */ = {
 			isa = PBXGroup;
 			children = (
 				AFFBFE7CBDD29870C0C6D079 /* AppIcon.icon */,
 				B2C7FEFEA7B066E287B99502 /* Info.plist */,
 				2A0E98A4FD7D5E98E24AE15F /* App */,
+				7F3F552284805CF274EB5898 /* Localization */,
 				4839EEA803FA0F4C0CACC15D /* Panel */,
+				9870DF52DB48B63D0DB18154 /* Resources */,
 				2CD2860051B4CCF1E5A3D5D1 /* UI */,
 			);
 			path = Stasks;
@@ -151,6 +177,14 @@
 				765B1918E4C44DDAE7EFD1C0 /* Stasks.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9870DF52DB48B63D0DB18154 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				3C9602C509460665BA498AB4 /* Localizable.strings */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -197,6 +231,9 @@
 			knownRegions = (
 				Base,
 				en,
+				es,
+				fr,
+				pt,
 			);
 			mainGroup = 20A8E8DD7CEA9BAFFCF51FF3;
 			minimizedProjectReferenceProxies = 1;
@@ -219,6 +256,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FF5EC0724AC7B4ABB3E17C28 /* AppIcon.icon in Resources */,
+				C2808A39D23D37598391C078 /* Localizable.strings in Resources */,
 				4162082B14FAE14CEABCFCC9 /* stasks-hook.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -231,8 +269,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F4AAD7371813D73D48EB1D7 /* AppDelegate.swift in Sources */,
+				2E26689D37DC092F2F179DE8 /* AppLanguage.swift in Sources */,
+				C09ECE37E445690FFE2E766F /* AttentionSound.swift in Sources */,
 				B4C7FB3DD94A8DA427CAA838 /* HotKeyManager.swift in Sources */,
 				C4BDB748472CEEF48625D095 /* KeychainStore.swift in Sources */,
+				1E21AA8E76BE886EA34B202F /* L10n.swift in Sources */,
 				9AC9A305EDBEA4CF305643AC /* NewTaskField.swift in Sources */,
 				72D7BB7584FFF668075F4742 /* PanelController.swift in Sources */,
 				22BC0C0635C378444AE2AC5B /* PanelHeaderView.swift in Sources */,
@@ -248,10 +289,25 @@
 				EBA7774804401594123A2324 /* TaskRowView.swift in Sources */,
 				56BCB46766E2603DB8E9814B /* TerminalFocuser.swift in Sources */,
 				92F4A415F7607699D6350BC6 /* Theme.swift in Sources */,
+				52EABB5ABBCAD404BF332916 /* TitleClientFactory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		3C9602C509460665BA498AB4 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				243A06244829CD91D112E2E5 /* en */,
+				33D6B30C032693EE1C30C589 /* es */,
+				E6981E77153210D25750D549 /* fr */,
+				34D38D4493B290260571A4FB /* pt */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		388536AF2C4E78DE911B10B4 /* Release */ = {
@@ -327,7 +383,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.lucianostegun.stasks;
+				PRODUCT_BUNDLE_IDENTIFIER = com.volkker.stasks.app;
 				PRODUCT_NAME = Stasks;
 				SDKROOT = macosx;
 				SWIFT_STRICT_CONCURRENCY = minimal;
@@ -352,7 +408,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.lucianostegun.stasks;
+				PRODUCT_BUNDLE_IDENTIFIER = com.volkker.stasks.app;
 				PRODUCT_NAME = Stasks;
 				SDKROOT = macosx;
 				SWIFT_STRICT_CONCURRENCY = minimal;

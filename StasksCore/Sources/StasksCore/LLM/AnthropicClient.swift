@@ -1,17 +1,6 @@
 import Foundation
 
-public enum AnthropicError: Error, Equatable, Sendable {
-    case http(Int, String)
-    case transport(String)
-    case decoding(String)
-    case emptyResponse
-}
-
-public protocol AnthropicAPI: Sendable {
-    func complete(system: String, user: String, maxTokens: Int) async throws -> String
-}
-
-public struct AnthropicClient: AnthropicAPI {
+public struct AnthropicClient: LLMClient {
     public static let model = "claude-haiku-4-5"
     private static let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
     private let apiKey: String

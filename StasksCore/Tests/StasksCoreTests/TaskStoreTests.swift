@@ -78,6 +78,34 @@ final class TaskStoreTests: XCTestCase {
         XCTAssertNotNil(s.task(slackChannelId: "C1", ts: "9.9"))
     }
 
+    func testAttentionCallbackFiresOnlyWhenEnteringWaitingInput() {
+        let s = makeStore()
+        let t = manual("a")
+        s.add(t)
+        var fired: [UUID] = []
+        s.onAttentionRequested = { fired.append($0.id) }
+        s.setActivity(id: t.id, .working)
+        XCTAssertEqual(fired, [])
+        s.setActivity(id: t.id, .waitingInput)
+        XCTAssertEqual(fired, [t.id])
+        s.setActivity(id: t.id, .waitingInput)   // repeated notification while still waiting: silent
+        XCTAssertEqual(fired, [t.id])
+        s.setActivity(id: t.id, .finished)
+        s.setActivity(id: t.id, .waitingInput)
+        XCTAssertEqual(fired, [t.id, t.id])
+    }
+
+    func testAttentionCallbackSkipsDoneTasks() {
+        let s = makeStore()
+        let t = manual("a")
+        s.add(t)
+        s.setStatus(id: t.id, .done)
+        var count = 0
+        s.onAttentionRequested = { _ in count += 1 }
+        s.setActivity(id: t.id, .waitingInput)
+        XCTAssertEqual(count, 0)
+    }
+
     func testSetTitlePinned() {
         let s = makeStore()
         let t = manual("a"); s.add(t)

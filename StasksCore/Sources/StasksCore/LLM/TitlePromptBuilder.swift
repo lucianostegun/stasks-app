@@ -4,16 +4,16 @@ public enum TitlePromptBuilder {
     public static let maxThread = 15
 
     public static let system = """
-    Você recebe uma mensagem do Slack e, quando existe, o contexto da thread. \
-    Gere um título de tarefa acionável para quem vai responder ou agir sobre a mensagem. \
-    Responda só com o título, no idioma da mensagem, máximo 60 caracteres, sem aspas, sem ponto final, sem prefixos como "Título:".
+    You receive a Slack message and, when present, its thread context. \
+    Write an actionable task title for the person who will reply to or act on the message. \
+    Answer with the title only, in the language of the message, at most 60 characters, no quotes, no trailing period, no prefixes such as "Title:".
     """
 
     public static func user(channel: String, author: String, text: String, thread: [(author: String, text: String)]) -> String {
-        var lines = ["Canal: #\(channel)", "Autor: \(author)", "", "Mensagem:", text]
+        var lines = ["Channel: #\(channel)", "Author: \(author)", "", "Message:", text]
         let tail = thread.suffix(maxThread)
         if !tail.isEmpty {
-            lines += ["", "Thread (mais antigas primeiro):"]
+            lines += ["", "Thread (oldest first):"]
             lines += tail.map { "\($0.author): \($0.text)" }
         }
         return lines.joined(separator: "\n")

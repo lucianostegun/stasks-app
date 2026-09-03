@@ -9,6 +9,8 @@ final class PanelModel {
     let prefs: Preferences
     var slackState: SlackConnectionState = .idle
     var llmError: String?
+    /// True when Slack titles want the LLM but the chosen provider has no usable configuration. Refreshed on launch, on credential save and on provider change.
+    var titleProviderUnconfigured = false
     var maxListHeight: CGFloat = 500
     /// Set when the user resized the panel; the list then fills the window instead of sizing to content.
     var manualHeight: CGFloat?
@@ -29,8 +31,10 @@ final class PanelModel {
     }
 
     var errorBanner: String? {
-        if case let .disconnected(reason) = slackState { return "Slack desconectado (\(reason))" }
-        return llmError
+        if case let .disconnected(reason) = slackState { return L("panel.slackDisconnected", reason) }
+        if let llmError { return llmError }
+        if prefs.llmEnabled, titleProviderUnconfigured { return L("panel.titlesUnconfigured") }
+        return nil
     }
 
     func createManual(_ title: String) {

@@ -30,17 +30,41 @@ enum HotKeyChoice: String, CaseIterable, Identifiable {
     }
 }
 
+/// Which backend writes Slack task titles.
+enum TitleProvider: String, CaseIterable, Identifiable {
+    case anthropic, openAI, claudeCode
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .anthropic: return "Anthropic API"
+        case .openAI: return "OpenAI-compatible"
+        case .claudeCode: return "Claude Code CLI"
+        }
+    }
+}
+
 @Observable
 final class Preferences {
     static let shared = Preferences()
     private let d = UserDefaults.standard
 
+    var language: AppLanguage { didSet { d.set(language.rawValue, forKey: "language"); L10n.shared.apply(language) } }
     var order: StackOrder { didSet { d.set(order.rawValue, forKey: "order") } }
     var hideDoneAfterHours: Double { didSet { d.set(hideDoneAfterHours, forKey: "hideDoneAfterHours") } }
     var llmEnabled: Bool { didSet { d.set(llmEnabled, forKey: "llmEnabled") } }
+    var titleProvider: TitleProvider { didSet { d.set(titleProvider.rawValue, forKey: "titleProvider") } }
+    var openAIBaseURL: String { didSet { d.set(openAIBaseURL, forKey: "openAIBaseURL") } }
+    var openAIModel: String { didSet { d.set(openAIModel, forKey: "openAIModel") } }
+    var claudeCodeModel: String { didSet { d.set(claudeCodeModel, forKey: "claudeCodeModel") } }
+    /// Empty = auto-detect via `ClaudeCodeClient.locate()`.
+    var claudeCodePath: String { didSet { d.set(claudeCodePath, forKey: "claudeCodePath") } }
     var pollInterval: Double { didSet { d.set(pollInterval, forKey: "pollInterval") } }
     var hotKey: HotKeyChoice { didSet { d.set(hotKey.rawValue, forKey: "hotKey") } }
     var pinned: Bool { didSet { d.set(pinned, forKey: "pinned") } }
+    var soundEnabled: Bool { didSet { d.set(soundEnabled, forKey: "soundEnabled") } }
+    var soundName: String { didSet { d.set(soundName, forKey: "soundName") } }
+    /// 0...1, applied to `NSSound.volume`.
+    var soundVolume: Double { didSet { d.set(soundVolume, forKey: "soundVolume") } }
     var completedCollapsed: Bool { didSet { d.set(completedCollapsed, forKey: "completedCollapsed") } }
     /// Persisted as two Doubles so the panel origin never contends with state.json, which the Slack poller also writes.
     /// nil = the panel height follows its content; a value = the user dragged the bottom edge.
@@ -61,12 +85,21 @@ final class Preferences {
     }
 
     private init() {
+        language = AppLanguage(rawValue: d.string(forKey: "language") ?? "") ?? .system
         order = StackOrder(rawValue: d.string(forKey: "order") ?? "") ?? .lifo
         hideDoneAfterHours = d.object(forKey: "hideDoneAfterHours") as? Double ?? 8
         llmEnabled = d.object(forKey: "llmEnabled") as? Bool ?? true
+        titleProvider = TitleProvider(rawValue: d.string(forKey: "titleProvider") ?? "") ?? .anthropic
+        openAIBaseURL = d.string(forKey: "openAIBaseURL") ?? OpenAICompatibleClient.defaultBaseURL
+        openAIModel = d.string(forKey: "openAIModel") ?? OpenAICompatibleClient.defaultModel
+        claudeCodeModel = d.string(forKey: "claudeCodeModel") ?? ClaudeCodeClient.defaultModel
+        claudeCodePath = d.string(forKey: "claudeCodePath") ?? ""
         pollInterval = d.object(forKey: "pollInterval") as? Double ?? 15
         hotKey = HotKeyChoice(rawValue: d.string(forKey: "hotKey") ?? "") ?? .optCmdS
         pinned = d.bool(forKey: "pinned")
+        soundEnabled = d.object(forKey: "soundEnabled") as? Bool ?? true
+        soundName = d.string(forKey: "soundName") ?? AttentionSound.fallbackName
+        soundVolume = d.object(forKey: "soundVolume") as? Double ?? 0.7
         completedCollapsed = d.object(forKey: "completedCollapsed") as? Bool ?? true
         panelHeight = d.object(forKey: "panelHeight") as? Double
         if let x = d.object(forKey: "panelOriginX") as? Double, let y = d.object(forKey: "panelOriginY") as? Double {
@@ -74,5 +107,6 @@ final class Preferences {
         } else {
             panelOrigin = nil
         }
+        L10n.shared.apply(language)
     }
 }

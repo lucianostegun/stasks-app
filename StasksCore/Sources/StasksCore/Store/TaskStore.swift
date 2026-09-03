@@ -10,6 +10,8 @@ public final class TaskStore {
     @ObservationIgnored private let now: @Sendable () -> Date
     @ObservationIgnored private var saveTask: Task<Void, Never>?
     @ObservationIgnored public var debounceNanos: UInt64 = 200_000_000
+    /// Fires once when an active task enters `.waitingInput`, not on repeated notifications while it stays there.
+    @ObservationIgnored public var onAttentionRequested: ((TaskItem) -> Void)?
 
     public init(persistence: (any TaskPersistence)?, now: @escaping @Sendable () -> Date = { Date() }) {
         self.persistence = persistence
@@ -52,7 +54,11 @@ public final class TaskStore {
     }
 
     public func setActivity(id: UUID, _ activity: ClaudeActivity?) {
+        let before = task(id: id)
         update(id: id) { $0.activity = activity }
+        if activity == .waitingInput, let before, before.activity != .waitingInput, before.status.isActive, let after = task(id: id) {
+            onAttentionRequested?(after)
+        }
     }
 
     public func remove(id: UUID) {

@@ -6,7 +6,9 @@ import StasksCore
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let prefs = Preferences.shared
     private var settingsWindow: NSWindow?
+    private var settingsMenuItem: NSMenuItem?
     private var hooksMenuItem: NSMenuItem?
+    private var quitMenuItem: NSMenuItem?
     private let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Stasks")
     private var stateURL: URL { supportDir.appendingPathComponent("state.json") }
 
@@ -18,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var transcripts: TranscriptWatcher!
     private var poller: SlackPoller!
     private let hotKey = HotKeyManager()
+    private let attentionSound = AttentionSound()
     private var purgeTimer: Timer?
     private var watchedSessionIds: Set<String> = []
     var settingsModel: SettingsModel?
@@ -29,6 +32,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         store = TaskStore(persistence: JSONFilePersistence(url: supportDir.appendingPathComponent("tasks.json")))
         store.purgeCompleted(olderThanDays: 7)
+        store.onAttentionRequested = { [weak self] _ in
+            guard let self else { return }
+            self.attentionSound.play(self.prefs)
+        }
 
         setupPanel()
         setupStatusItem()
@@ -71,28 +78,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let menu = NSMenu()
         menu.autoenablesItems = false
         menu.delegate = self
-        menu.addItem(withTitle: "Ajustes…", action: #selector(openSettings), keyEquivalent: ",").target = self
-        let hooks = menu.addItem(withTitle: "Instalar hooks do Claude", action: #selector(installHooks), keyEquivalent: "")
+        let settings = menu.addItem(withTitle: L("menu.settings"), action: #selector(openSettings), keyEquivalent: ",")
+        settings.target = self
+        settingsMenuItem = settings
+        let hooks = menu.addItem(withTitle: L("menu.hooks.install"), action: #selector(installHooks), keyEquivalent: "")
         hooks.target = self
         hooksMenuItem = hooks
         menu.addItem(.separator())
-        menu.addItem(withTitle: "Sair", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        quitMenuItem = menu.addItem(withTitle: L("menu.quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         statusItem = StatusItemController(onToggle: { [weak self] in self?.togglePanel() }, menu: menu)
     }
 
-    /// The hooks item reflects the real state of ~/.claude/settings.json every time the menu opens.
+    /// Titles are re-read on every open: the hooks item reflects the real state of ~/.claude/settings.json,
+    /// and all items pick up a language change made in Settings.
     func menuNeedsUpdate(_ menu: NSMenu) {
+        settingsMenuItem?.title = L("menu.settings")
+        quitMenuItem?.title = L("menu.quit")
         guard let item = hooksMenuItem, let sm = settingsModel else { return }
         sm.refreshHookStatus()
         switch sm.hookStatus {
         case .installed:
-            item.title = "Hooks do Claude instalados"
+            item.title = L("menu.hooks.installed")
             item.isEnabled = false
         case .outdated:
-            item.title = "Atualizar hooks do Claude"
+            item.title = L("menu.hooks.update")
             item.isEnabled = true
         case .missing:
-            item.title = "Instalar hooks do Claude"
+            item.title = L("menu.hooks.install")
             item.isEnabled = true
         }
     }
@@ -165,7 +177,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let titles: (any TitleGenerating)? = LLMTitleGate(
             isEnabled: { await MainActor.run { Preferences.shared.llmEnabled } },
             onOutcome: { [weak self] ok in
-                Task { @MainActor in self?.model.llmError = ok ? nil : "Anthropic: falha ao gerar título" }
+                Task { @MainActor in self?.model.llmError = ok ? nil : L("panel.llmError") }
             })
         poller = SlackPoller(store: store, stateURL: stateURL, clientProvider: {
             guard let token = KeychainStore.get(KeychainStore.slackToken), !token.isEmpty else { return nil }
@@ -174,14 +186,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         poller.start()
     }
 
-    /// Reads the key and toggle at call time so Settings changes apply without restart.
-    /// `onOutcome(false)` means Anthropic was configured and enabled but generation failed, which is what the red dot reports.
+    /// Builds the provider client at call time so Settings changes apply without restart.
+    /// `onOutcome(false)` means a provider was configured and enabled but generation failed, which is what the red dot reports.
     private struct LLMTitleGate: TitleGenerating {
         let isEnabled: @Sendable () async -> Bool
         let onOutcome: @Sendable (Bool) -> Void
         func title(channel: String, author: String, text: String, thread: [(author: String, text: String)]) async -> String? {
-            guard await isEnabled(), let key = KeychainStore.get(KeychainStore.anthropicKey), !key.isEmpty else { return nil }
-            let generated = await TitleGenerator(client: AnthropicClient(apiKey: key)).title(channel: channel, author: author, text: text, thread: thread)
+            guard await isEnabled(), let client = await MainActor.run(body: { TitleClientFactory.make(Preferences.shared) }) else { return nil }
+            let generated = await TitleGenerator(client: client).title(channel: channel, author: author, text: text, thread: thread)
             onOutcome(generated != nil)
             return generated
         }
@@ -194,11 +206,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let installer = HookInstaller(settingsURL: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/settings.json"), scriptPath: scriptPath)
         let sm = SettingsModel(prefs: prefs, hookInstaller: installer,
                                slackTestFactory: { SlackClient(token: $0) },
-                               anthropicTestFactory: { AnthropicClient(apiKey: $0) })
-        sm.onCredentialsChanged = { [weak self] in self?.poller.reauthenticate() }
+                               titleClientFactory: { TitleClientFactory.make($0) })
+        sm.onCredentialsChanged = { [weak self] in self?.poller.reauthenticate(); self?.refreshCredentialState() }
         sm.onHotKeyChanged = { [weak self] in self?.hotKey.register($0) }
         sm.onPollIntervalChanged = { [weak self] in self?.poller.interval = $0 }
         settingsModel = sm
+        observeTitleProvider()
+    }
+
+    /// The unconfigured banner only matters once Slack is configured, since the LLM is used for Slack titles alone.
+    private func refreshCredentialState() {
+        let hasSlack = !(KeychainStore.get(KeychainStore.slackToken) ?? "").isEmpty
+        model.titleProviderUnconfigured = hasSlack && !TitleClientFactory.isConfigured(prefs)
+    }
+
+    /// Provider fields live in Preferences, so a change there re-evaluates the banner without a credential save.
+    private func observeTitleProvider() {
+        withObservationTracking {
+            _ = prefs.titleProvider; _ = prefs.claudeCodePath; _ = prefs.claudeCodeModel; _ = prefs.openAIBaseURL; _ = prefs.openAIModel
+            refreshCredentialState()
+        } onChange: { [weak self] in
+            Task { @MainActor in self?.observeTitleProvider() }
+        }
     }
 
     /// Owns its own window: the SwiftUI `Settings` scene's `showSettingsWindow:` selector does not

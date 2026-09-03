@@ -12,10 +12,11 @@ struct SettingsView: View {
 
     var body: some View {
         TabView {
-            general.tabItem { Label("Geral", systemImage: "gearshape") }
+            general.tabItem { Label(L("settings.tab.general"), systemImage: "gearshape") }
             claude.tabItem { Label("Claude", systemImage: "terminal") }
             slack.tabItem { Label("Slack", systemImage: "number") }
-            anthropic.tabItem { Label("Anthropic", systemImage: "sparkles") }
+            titles.tabItem { Label(L("settings.tab.titles"), systemImage: "sparkles") }
+            sounds.tabItem { Label(L("settings.tab.sounds"), systemImage: "speaker.wave.2") }
         }
         .frame(width: 460, height: 320)
         .onAppear { model.refreshHookStatus() }
@@ -23,33 +24,36 @@ struct SettingsView: View {
 
     private var general: some View {
         Form {
-            Picker("Ordem da pilha", selection: $prefs.order) {
-                Text("LIFO (mais recente no topo)").tag(StackOrder.lifo)
-                Text("FIFO (mais antiga no topo)").tag(StackOrder.fifo)
+            Picker(L("settings.language"), selection: $prefs.language) {
+                ForEach(AppLanguage.selectable) { Text($0.nativeName).tag($0) }
             }
-            Stepper("Esconder concluídas após \(Int(prefs.hideDoneAfterHours))h", value: $prefs.hideDoneAfterHours, in: 1...72)
-            Picker("Atalho global", selection: $prefs.hotKey) {
+            Picker(L("settings.order"), selection: $prefs.order) {
+                Text(L("settings.order.lifo")).tag(StackOrder.lifo)
+                Text(L("settings.order.fifo")).tag(StackOrder.fifo)
+            }
+            Stepper(L("settings.hideDoneAfter", Int(prefs.hideDoneAfterHours)), value: $prefs.hideDoneAfterHours, in: 1...72)
+            Picker(L("settings.hotKey"), selection: $prefs.hotKey) {
                 ForEach(HotKeyChoice.allCases) { Text($0.label).tag($0) }
             }
             .onChange(of: prefs.hotKey) { _, new in model.onHotKeyChanged(new) }
-            Toggle("Abrir no login", isOn: Binding(get: { model.launchAtLogin }, set: { model.launchAtLogin = $0 }))
+            Toggle(L("settings.launchAtLogin"), isOn: Binding(get: { model.launchAtLogin }, set: { model.launchAtLogin = $0 }))
             if let msg = model.generalMessage { Text(msg).font(.caption).foregroundStyle(.secondary) }
         }.formStyle(.grouped)
     }
 
     private var claude: some View {
         Form {
-            LabeledContent("Hooks do Claude Code") {
+            LabeledContent(L("settings.claude.hooks")) {
                 switch model.hookStatus {
-                case .installed: Label("Instalados", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
-                case .outdated: Label("Desatualizados", systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                case .missing: Label("Ausentes", systemImage: "xmark.circle.fill").foregroundStyle(.red)
+                case .installed: Label(L("settings.claude.hooks.installed"), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                case .outdated: Label(L("settings.claude.hooks.outdated"), systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                case .missing: Label(L("settings.claude.hooks.missing"), systemImage: "xmark.circle.fill").foregroundStyle(.red)
                 }
             }
-            Button(model.hookStatus == .installed ? "Reinstalar hooks" : "Instalar hooks") { model.installHooks() }
+            Button(model.hookStatus == .installed ? L("settings.claude.reinstall") : L("settings.claude.install")) { model.installHooks() }
             if let msg = model.hookMessage { Text(msg).font(.caption).foregroundStyle(.secondary) }
-            LabeledContent("Inbox") { Text(model.inboxPath).font(.caption).textSelection(.enabled) }
-            Button("Abrir logs no Console") {
+            LabeledContent(L("settings.claude.inbox")) { Text(model.inboxPath).font(.caption).textSelection(.enabled) }
+            Button(L("settings.claude.openLogs")) {
                 NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Utilities/Console.app"))
             }
         }.formStyle(.grouped)
@@ -57,29 +61,71 @@ struct SettingsView: View {
 
     private var slack: some View {
         Form {
-            SecureField("User token (xoxp-…)", text: $model.slackToken)
+            SecureField(L("settings.slack.token"), text: $model.slackToken)
             HStack {
-                Button("Salvar") { model.saveSlackToken() }
-                Button("Testar") { Task { await model.testSlack() } }.disabled(model.slackToken.isEmpty)
+                Button(L("common.save")) { model.saveSlackToken() }
+                Button(L("common.test")) { Task { await model.testSlack() } }.disabled(model.slackToken.isEmpty)
             }
             if let r = model.slackTestResult { Text(r).font(.caption).foregroundStyle(.secondary) }
-            Slider(value: $prefs.pollInterval, in: 10...60, step: 5) { Text("Polling: \(Int(prefs.pollInterval))s") }
+            Slider(value: $prefs.pollInterval, in: 10...60, step: 5) { Text(L("settings.slack.polling", Int(prefs.pollInterval))) }
                 .onChange(of: prefs.pollInterval) { _, new in model.onPollIntervalChanged(new) }
             Text("Scopes: reactions:read, channels:history, groups:history, im:history, mpim:history, channels:read, groups:read, users:read")
                 .font(.caption2).foregroundStyle(.tertiary)
         }.formStyle(.grouped)
     }
 
-    private var anthropic: some View {
+    private var sounds: some View {
         Form {
-            Toggle("Gerar títulos com LLM", isOn: $prefs.llmEnabled)
-            SecureField("API key (sk-ant-…)", text: $model.anthropicKey)
-            HStack {
-                Button("Salvar") { model.saveAnthropicKey() }
-                Button("Testar") { Task { await model.testAnthropic() } }.disabled(model.anthropicKey.isEmpty)
+            Toggle(L("settings.sounds.enabled"), isOn: $prefs.soundEnabled)
+            Picker(L("settings.sounds.sound"), selection: $prefs.soundName) {
+                ForEach(AttentionSound.availableNames, id: \.self) { Text($0).tag($0) }
             }
-            if let r = model.anthropicTestResult { Text(r).font(.caption).foregroundStyle(.secondary) }
-            Text("Modelo: \(AnthropicClient.model)").font(.caption2).foregroundStyle(.tertiary)
+            .onChange(of: prefs.soundName) { _, _ in model.previewSound() }
+            Slider(value: $prefs.soundVolume, in: 0...1, step: 0.05) {
+                Text(L("settings.sounds.volume", Int((prefs.soundVolume * 100).rounded())))
+            } onEditingChanged: { editing in if !editing { model.previewSound() } }
+            Button(L("settings.sounds.preview")) { model.previewSound() }
+            Text(L("settings.sounds.hint")).font(.caption2).foregroundStyle(.tertiary)
+        }
+        .formStyle(.grouped)
+    }
+
+    private var titles: some View {
+        Form {
+            Toggle(L("settings.titles.enabled"), isOn: $prefs.llmEnabled)
+            Picker(L("settings.titles.provider"), selection: $prefs.titleProvider) {
+                ForEach(TitleProvider.allCases) { Text($0.label).tag($0) }
+            }
+            .onChange(of: prefs.titleProvider) { _, _ in model.titleTestResult = nil }
+
+            switch prefs.titleProvider {
+            case .anthropic:
+                SecureField(L("settings.titles.apiKey"), text: $model.anthropicKey)
+                HStack {
+                    Button(L("common.save")) { model.saveAnthropicKey() }
+                    Button(L("common.test")) { Task { await model.testTitles() } }
+                }
+                Text(L("settings.titles.model.fixed", AnthropicClient.model)).font(.caption2).foregroundStyle(.tertiary)
+            case .openAI:
+                TextField(L("settings.titles.baseURL"), text: $prefs.openAIBaseURL)
+                TextField(L("settings.titles.model"), text: $prefs.openAIModel)
+                SecureField(L("settings.titles.apiKey"), text: $model.openAIKey)
+                HStack {
+                    Button(L("common.save")) { model.saveOpenAIKey() }
+                    Button(L("common.test")) { Task { await model.testTitles() } }
+                }
+                Text(L("settings.titles.hint.openAI")).font(.caption2).foregroundStyle(.tertiary)
+            case .claudeCode:
+                TextField(L("settings.titles.model"), text: $prefs.claudeCodeModel)
+                TextField(L("settings.titles.claudePath"), text: $prefs.claudeCodePath, prompt: Text(L("settings.titles.claudePath.auto")))
+                LabeledContent(L("settings.titles.claudePath.detected")) {
+                    Text(model.detectedClaudePath ?? L("settings.titles.claudeNotFound"))
+                        .font(.caption).foregroundStyle(model.detectedClaudePath == nil ? .red : .secondary).textSelection(.enabled)
+                }
+                Button(L("common.test")) { Task { await model.testTitles() } }
+                Text(L("settings.titles.hint.claudeCode")).font(.caption2).foregroundStyle(.tertiary)
+            }
+            if let r = model.titleTestResult { Text(r).font(.caption).foregroundStyle(.secondary) }
         }.formStyle(.grouped)
     }
 }

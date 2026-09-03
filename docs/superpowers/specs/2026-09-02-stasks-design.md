@@ -78,7 +78,7 @@ struct Task: Identifiable, Codable, Equatable {
 - `~/Library/Application Support/Stasks/tasks.json`: array de `Task`. Gravação atômica (write temp + rename), debounce 200ms após mutação.
 - `~/Library/Application Support/Stasks/inbox.jsonl`: fila de eventos dos hooks do Claude.
 - `~/Library/Application Support/Stasks/state.json`: cursores do Slack (`lastSeenTs` por canal, `installedAt`), posição do painel, preferências não sensíveis.
-- Keychain (service `com.lucianostegun.stasks`): Slack user token, Anthropic API key.
+- Keychain (service `com.volkker.stasks.app`): Slack user token, Anthropic API key.
 - Preferências simples (LIFO/FIFO, horas de expiração, hotkey, toggle LLM) em `UserDefaults`.
 
 ## 4. Integração Claude Code
@@ -227,7 +227,7 @@ Janela normal (`⌘,` com painel aberto, ou pelo menu do ícone). Abas:
 
 ## 9. Logging
 
-`os.Logger` com subsystem `com.lucianostegun.stasks`, categorias `inbox`, `transcript`, `slack`, `llm`, `ui`. Sem tokens nos logs.
+`os.Logger` com subsystem `com.volkker.stasks.app`, categorias `inbox`, `transcript`, `slack`, `llm`, `ui`. Sem tokens nos logs.
 
 ## 10. Testes
 

@@ -30,7 +30,7 @@ struct TaskRowView: View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(alignment: .center, spacing: 10) {
                 if editing {
-                    TextField("Título", text: $draft)
+                    TextField(L("task.title.placeholder"), text: $draft)
                         .textFieldStyle(.plain).font(.system(size: 13, weight: .semibold))
                         .focused($focused)
                         .onSubmit { onRename(draft); editing = false }
@@ -54,7 +54,7 @@ struct TaskRowView: View {
             HStack(spacing: 10) {
                 Text(task.subtitle ?? "").font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
                 Spacer(minLength: 0)
-                Text(RelativeTime.label(from: isDone ? (task.completedAt ?? task.createdAt) : task.createdAt, to: now))
+                Text(RelativeTime.label(from: isDone ? (task.completedAt ?? task.createdAt) : task.createdAt, to: now, nowLabel: L("time.now")))
                     .font(.system(size: 11).monospacedDigit()).foregroundStyle(.tertiary)
             }
         }
@@ -81,9 +81,9 @@ struct TaskRowView: View {
                 }
             }
             Divider()
-            if task.source.kind != .manual { Button("Abrir origem") { onOpen() } }
-            Button("Editar título") { startEditing() }
-            Button("Remover", role: .destructive) { onRemove() }
+            if task.source.kind != .manual { Button(L("task.openSource")) { onOpen() } }
+            Button(L("task.rename")) { startEditing() }
+            Button(L("task.remove"), role: .destructive) { onRemove() }
         }
     }
 
@@ -105,6 +105,6 @@ struct TaskRowView: View {
     private func startEditing() { draft = task.title; editing = true; focused = true }
 
     private func label(for s: TaskStatus) -> String {
-        switch s { case .open: return "Open"; case .inProgress: return "In progress"; case .done: return "Done" }
+        switch s { case .open: return L("status.open"); case .inProgress: return L("status.inProgress"); case .done: return L("status.done") }
     }
 }

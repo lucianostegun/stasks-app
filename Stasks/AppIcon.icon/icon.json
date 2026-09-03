@@ -1,8 +1,8 @@
 {
   "fill" : {
     "linear-gradient" : [
-      "display-p3:0.23070,0.23850,0.28785,1.00000",
-      "display-p3:0.07571,0.09084,0.13167,1.00000"
+      "srgb:1.00000,1.00000,1.00000,1.00000",
+      "srgb:0.83742,0.83744,0.83743,1.00000"
     ],
     "orientation" : {
       "start" : {
@@ -20,6 +20,18 @@
       "blur-material" : null,
       "layers" : [
         {
+          "image-name" : "7a5bc77f-b8ba-4567-a432-d01d69fcab27.png",
+          "name" : "7a5bc77f-b8ba-4567-a432-d01d69fcab27",
+          "position" : {
+            "scale" : 0.7,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "hidden" : true,
           "image-name" : "Codex Image Sep 3, 2026, 10_49_42 AM.png",
           "name" : "Codex Image Sep 3, 2026, 10_49_42 AM",
           "position" : {
@@ -33,13 +45,13 @@
         {
           "glass" : true,
           "hidden" : true,
-          "image-name" : "Codex Image Sep 3, 2026, 10_16_58 AM.png",
-          "name" : "Codex Image Sep 3, 2026, 10_16_58 AM",
+          "image-name" : "logo-v1 2.png",
+          "name" : "logo-v1 2",
           "position" : {
-            "scale" : 0.79,
+            "scale" : 0.45,
             "translation-in-points" : [
               0,
-              0
+              -10
             ]
           }
         }
@@ -51,8 +63,8 @@
       },
       "specular" : true,
       "translucency" : {
-        "enabled" : true,
-        "value" : 0.25
+        "enabled" : false,
+        "value" : 0.5
       }
     }
   ],

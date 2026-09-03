@@ -9,7 +9,7 @@ struct NewTaskField: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "plus").font(.system(size: 11, weight: .bold)).foregroundStyle(.secondary)
-            TextField("Nova tarefa…", text: $text)
+            TextField(L("panel.newTask.placeholder"), text: $text)
                 .textFieldStyle(.plain).font(.system(size: 12.5))
                 .focused(focus)
                 .onSubmit { onSubmit() }

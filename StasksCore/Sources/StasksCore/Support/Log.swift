@@ -1,7 +1,7 @@
 import os
 
 public enum Log {
-    public static let subsystem = "com.lucianostegun.stasks"
+    public static let subsystem = "com.volkker.stasks.app"
     public static let inbox = Logger(subsystem: subsystem, category: "inbox")
     public static let transcript = Logger(subsystem: subsystem, category: "transcript")
     public static let slack = Logger(subsystem: subsystem, category: "slack")

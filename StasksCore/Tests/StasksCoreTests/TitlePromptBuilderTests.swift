@@ -4,8 +4,8 @@ import XCTest
 final class TitlePromptBuilderTests: XCTestCase {
     func testUserPromptIncludesContext() {
         let p = TitlePromptBuilder.user(channel: "eng-backend", author: "Ana", text: "Can you review PR 42?", thread: [(author: "Bob", text: "root msg")])
-        XCTAssertTrue(p.contains("Canal: #eng-backend"))
-        XCTAssertTrue(p.contains("Autor: Ana"))
+        XCTAssertTrue(p.contains("Channel: #eng-backend"))
+        XCTAssertTrue(p.contains("Author: Ana"))
         XCTAssertTrue(p.contains("Can you review PR 42?"))
         XCTAssertTrue(p.contains("Bob: root msg"))
     }

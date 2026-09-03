@@ -12,7 +12,7 @@ struct StackPanelView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            PanelHeaderView(model: model) { newFocused = true }
+            PanelHeaderView(model: model)
                 .padding(.bottom, 10)
 
             if let banner = model.errorBanner {
@@ -20,7 +20,7 @@ struct StackPanelView: View {
                     HStack(spacing: 6) {
                         Circle().fill(Color.red).frame(width: 6, height: 6)
                         Text(banner).font(.system(size: 11)).lineLimit(1)
-                        Spacer(); Text("Ajustes").font(.system(size: 11, weight: .semibold))
+                        Spacer(); Text(L("panel.settings")).font(.system(size: 11, weight: .semibold))
                     }
                 }
                 .buttonStyle(.plain).foregroundStyle(.secondary)
@@ -32,7 +32,7 @@ struct StackPanelView: View {
             ScrollView {
                 LazyVStack(spacing: 2) {
                     if active.isEmpty {
-                        Text("Nada em aberto").font(.system(size: 12)).foregroundStyle(.tertiary).padding(.vertical, 18)
+                        Text(L("panel.empty")).font(.system(size: 12)).foregroundStyle(.tertiary).padding(.vertical, 18)
                     }
                     ForEach(active) { task in row(task) }
                 }
@@ -49,7 +49,7 @@ struct StackPanelView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: model.prefs.completedCollapsed ? "chevron.right" : "chevron.down").font(.system(size: 9, weight: .bold))
-                        Text("Concluídas").font(.system(size: 12, weight: .semibold))
+                        Text(L("panel.completed")).font(.system(size: 12, weight: .semibold))
                         Text("\(completed.count)").font(.system(size: 11, weight: .semibold))
                             .padding(.horizontal, 7).padding(.vertical, 1).background(Theme.chip(scheme), in: Capsule())
                         Spacer()
@@ -73,12 +73,21 @@ struct StackPanelView: View {
         .animation(.spring(duration: 0.25), value: completed.map(\.id))
         .onGeometryChange(for: CGSize.self) { $0.size } action: { model.onSizeChange($0) }
         .overlay(settingsShortcut)
+        .overlay(newTaskShortcut)
     }
 
     /// Invisible button so ⌘, opens Settings while the panel is the key window.
     private var settingsShortcut: some View {
         Button("") { model.onOpenSettings() }
             .keyboardShortcut(",", modifiers: .command)
+            .opacity(0)
+            .frame(width: 0, height: 0)
+    }
+
+    /// Invisible button so ⌘N focuses the new-task field. The field itself is the visible call to action.
+    private var newTaskShortcut: some View {
+        Button("") { newFocused = true }
+            .keyboardShortcut("n", modifiers: .command)
             .opacity(0)
             .frame(width: 0, height: 0)
     }

@@ -130,7 +130,7 @@ public final class SlackPoller {
         if let uid = message.user { authorName = await cachedUser(client, id: uid)?.bestName ?? uid } else { authorName = "?" }
         let channelName = channel?.name ?? channelId
         let isDM = channel?.isDirect ?? channelId.hasPrefix("D")
-        let text = message.text ?? ""
+        let text = await plainText(client, message.text ?? "")
 
         let task = TaskItem.slack(teamId: auth.teamId, channelId: channelId, channelName: channelName, ts: message.ts,
                                   permalink: message.permalink ?? "", text: text, author: authorName, isDM: isDM, now: now())
@@ -169,6 +169,15 @@ public final class SlackPoller {
             guard let current = store.task(id: task.id), !current.isPinnedTitle else { continue }
             store.setTitle(id: task.id, generated, pinned: false)
         }
+    }
+
+    /// Resolves `<@U…>` mentions to names, then strips Slack mrkdwn so provisional titles read as plain text.
+    private func plainText(_ client: any SlackAPI, _ text: String) async -> String {
+        var users: [String: String] = [:]
+        for id in Set(SlackText.mentionedUserIds(text)) {
+            if let u = await cachedUser(client, id: id) { users[id] = u.bestName }
+        }
+        return SlackText.plain(text, users: users)
     }
 
     private func cachedChannel(_ client: any SlackAPI, id: String) async -> SlackChannel? {

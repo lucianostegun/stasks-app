@@ -3,9 +3,10 @@ import Security
 import StasksCore
 
 enum KeychainStore {
-    static let service = "com.lucianostegun.stasks"
+    static let service = "com.volkker.stasks.app"
     static let slackToken = "slack.userToken"
     static let anthropicKey = "anthropic.apiKey"
+    static let openAIKey = "openai.apiKey"
 
     static func get(_ key: String) -> String? {
         let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,

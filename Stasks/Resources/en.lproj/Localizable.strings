@@ -1,0 +1,87 @@
+/* Language names */
+"language.system" = "System";
+
+/* Common */
+"common.save" = "Save";
+"common.test" = "Test";
+"common.testing" = "Testing…";
+"common.failure" = "Failed: %@";
+
+/* Settings */
+"settings.tab.general" = "General";
+"settings.language" = "Language";
+"settings.order" = "Stack order";
+"settings.order.lifo" = "LIFO (newest on top)";
+"settings.order.fifo" = "FIFO (oldest on top)";
+"settings.hideDoneAfter" = "Hide completed after %dh";
+"settings.hotKey" = "Global shortcut";
+"settings.launchAtLogin" = "Open at login";
+"settings.claude.hooks" = "Claude Code hooks";
+"settings.claude.hooks.installed" = "Installed";
+"settings.claude.hooks.outdated" = "Outdated";
+"settings.claude.hooks.missing" = "Missing";
+"settings.claude.install" = "Install hooks";
+"settings.claude.reinstall" = "Reinstall hooks";
+"settings.claude.inbox" = "Inbox";
+"settings.claude.openLogs" = "Open logs in Console";
+"settings.claude.scriptMissing" = "Hook script not found in the app bundle";
+"settings.claude.hooksInstalled" = "Hooks installed. Backup: %@";
+"settings.slack.token" = "User token (xoxp-…)";
+"settings.slack.polling" = "Polling: %ds";
+"settings.slack.ok" = "OK: %@ as @%@";
+"settings.keychain.saved" = "Saved to Keychain";
+"settings.keychain.failed" = "Failed to save to Keychain (code %d)";
+
+/* Titles */
+"settings.tab.titles" = "Titles";
+"settings.titles.enabled" = "Generate Slack task titles with an LLM";
+"settings.titles.provider" = "Provider";
+"settings.titles.apiKey" = "API key";
+"settings.titles.baseURL" = "Base URL";
+"settings.titles.model" = "Model";
+"settings.titles.model.fixed" = "Model: %@";
+"settings.titles.claudePath" = "claude executable";
+"settings.titles.claudePath.auto" = "Auto-detect";
+"settings.titles.claudePath.detected" = "Using";
+"settings.titles.claudeNotFound" = "claude not found. Install Claude Code or set the path above.";
+"settings.titles.notConfigured" = "Provider not configured";
+"settings.titles.hint.openAI" = "Works with OpenAI, Ollama (http://localhost:11434/v1, no key), Groq, OpenRouter.";
+"settings.titles.hint.claudeCode" = "Uses your Claude Code login, no API key. Runs `claude -p` per title, about 3s, with hooks disabled.";
+
+/* Sounds */
+"settings.tab.sounds" = "Sounds";
+"settings.sounds.enabled" = "Play a sound when a task needs attention";
+"settings.sounds.sound" = "Sound";
+"settings.sounds.volume" = "Volume: %d%%";
+"settings.sounds.preview" = "Preview";
+"settings.sounds.hint" = "Plays when Claude Code asks for permission or input (the row pulses amber).";
+
+/* Status item menu */
+"menu.settings" = "Settings…";
+"menu.hooks.install" = "Install Claude hooks";
+"menu.hooks.update" = "Update Claude hooks";
+"menu.hooks.installed" = "Claude hooks installed";
+"menu.quit" = "Quit";
+
+/* Panel */
+"panel.help.resetHeight" = "Double click: automatic height";
+"panel.help.lifo" = "Newest on top";
+"panel.help.fifo" = "Oldest on top";
+"panel.help.pin" = "Always visible";
+"panel.settings" = "Settings";
+"panel.empty" = "Nothing open";
+"panel.completed" = "Completed";
+"panel.newTask.placeholder" = "New task…";
+"panel.slackDisconnected" = "Slack disconnected (%@)";
+"panel.titlesUnconfigured" = "Titles: provider not configured";
+"panel.llmError" = "Anthropic: failed to generate title";
+
+/* Task row */
+"task.title.placeholder" = "Title";
+"task.openSource" = "Open source";
+"task.rename" = "Edit title";
+"task.remove" = "Remove";
+"status.open" = "Open";
+"status.inProgress" = "In progress";
+"status.done" = "Done";
+"time.now" = "now";

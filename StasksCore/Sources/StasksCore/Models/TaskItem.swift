@@ -100,7 +100,7 @@ public struct TaskItem: Identifiable, Codable, Equatable, Sendable {
     public static func slack(teamId: String, channelId: String, channelName: String, ts: String, permalink: String,
                              text: String, author: String, isDM: Bool, now: Date) -> TaskItem {
         let subtitle = isDM ? "DM · \(author)" : "#\(channelName) · \(author)"
-        return TaskItem(title: truncatedTitle(text.isEmpty ? "(sem texto)" : text),
+        return TaskItem(title: truncatedTitle(text.isEmpty ? "(no text)" : text),
                         subtitle: subtitle,
                         source: .slack(teamId: teamId, channelId: channelId, channelName: channelName, ts: ts, permalink: permalink),
                         createdAt: now,

@@ -10,26 +10,28 @@ final class SettingsModel {
     let prefs: Preferences
     private let hookInstaller: HookInstaller
     private let slackTestFactory: (String) -> any SlackAPI
-    private let anthropicTestFactory: (String) -> any AnthropicAPI
+    private let titleClientFactory: (Preferences) -> (any LLMClient)?
 
     var slackToken: String = KeychainStore.get(KeychainStore.slackToken) ?? ""
     var anthropicKey: String = KeychainStore.get(KeychainStore.anthropicKey) ?? ""
+    var openAIKey: String = KeychainStore.get(KeychainStore.openAIKey) ?? ""
     var hookStatus: HookStatus = .missing
     var hookMessage: String?
     var generalMessage: String?
     var slackTestResult: String?
-    var anthropicTestResult: String?
+    var titleTestResult: String?
 
     @ObservationIgnored var onCredentialsChanged: () -> Void = {}
     @ObservationIgnored var onHotKeyChanged: (HotKeyChoice) -> Void = { _ in }
     @ObservationIgnored var onPollIntervalChanged: (Double) -> Void = { _ in }
+    @ObservationIgnored private let previewPlayer = AttentionSound()
 
     init(prefs: Preferences, hookInstaller: HookInstaller,
-         slackTestFactory: @escaping (String) -> any SlackAPI, anthropicTestFactory: @escaping (String) -> any AnthropicAPI) {
+         slackTestFactory: @escaping (String) -> any SlackAPI, titleClientFactory: @escaping (Preferences) -> (any LLMClient)?) {
         self.prefs = prefs
         self.hookInstaller = hookInstaller
         self.slackTestFactory = slackTestFactory
-        self.anthropicTestFactory = anthropicTestFactory
+        self.titleClientFactory = titleClientFactory
         refreshHookStatus()
     }
 
@@ -42,13 +44,13 @@ final class SettingsModel {
 
     func installHooks() {
         guard !hookInstaller.scriptPath.isEmpty else {
-            hookMessage = "Script do hook não encontrado no bundle"
+            hookMessage = L("settings.claude.scriptMissing")
             return
         }
         do {
             let backup = try hookInstaller.install()
-            hookMessage = "Hooks instalados. Backup: \(backup.lastPathComponent)"
-        } catch { hookMessage = "Falha: \(error.localizedDescription)" }
+            hookMessage = L("settings.claude.hooksInstalled", backup.lastPathComponent)
+        } catch { hookMessage = L("common.failure", error.localizedDescription) }
         refreshHookStatus()
     }
 
@@ -58,30 +60,41 @@ final class SettingsModel {
     }
 
     func saveAnthropicKey() {
-        anthropicTestResult = Self.saveMessage(KeychainStore.set(KeychainStore.anthropicKey, anthropicKey))
+        titleTestResult = Self.saveMessage(KeychainStore.set(KeychainStore.anthropicKey, anthropicKey))
         onCredentialsChanged()
     }
 
+    func saveOpenAIKey() {
+        titleTestResult = Self.saveMessage(KeychainStore.set(KeychainStore.openAIKey, openAIKey))
+        onCredentialsChanged()
+    }
+
+    /// Where `claude` will actually run from, for display next to the path field.
+    var detectedClaudePath: String? { TitleClientFactory.resolvedClaudePath(prefs) }
+
     private static func saveMessage(_ status: OSStatus) -> String {
-        status == errSecSuccess ? "Salvo no Keychain" : "Falha ao salvar no Keychain (código \(status))"
+        status == errSecSuccess ? L("settings.keychain.saved") : L("settings.keychain.failed", Int(status))
     }
 
     func testSlack() async {
-        slackTestResult = "Testando…"
+        slackTestResult = L("common.testing")
         do {
             let auth = try await slackTestFactory(slackToken.trimmingCharacters(in: .whitespacesAndNewlines)).authTest()
-            slackTestResult = "OK: \(auth.team) como @\(auth.user)"
-        } catch { slackTestResult = "Falha: \(String(describing: error))" }
+            slackTestResult = L("settings.slack.ok", auth.team, auth.user)
+        } catch { slackTestResult = L("common.failure", String(describing: error)) }
     }
 
-    func testAnthropic() async {
-        anthropicTestResult = "Testando…"
+    /// Tests the provider currently selected, using saved credentials (unsaved edits in the key fields are not used).
+    func testTitles() async {
+        guard let client = titleClientFactory(prefs) else { titleTestResult = L("settings.titles.notConfigured"); return }
+        titleTestResult = L("common.testing")
         do {
-            let text = try await anthropicTestFactory(anthropicKey.trimmingCharacters(in: .whitespacesAndNewlines))
-                .complete(system: "Responda apenas OK.", user: "ping", maxTokens: 5)
-            anthropicTestResult = "OK (\(text.trimmingCharacters(in: .whitespacesAndNewlines)))"
-        } catch { anthropicTestResult = "Falha: \(String(describing: error))" }
+            let text = try await client.complete(system: "Reply with OK only.", user: "ping", maxTokens: 5)
+            titleTestResult = "OK (\(text.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40)))"
+        } catch { titleTestResult = L("common.failure", String(describing: error)) }
     }
+
+    func previewSound() { previewPlayer.play(name: prefs.soundName, volume: prefs.soundVolume) }
 
     var launchAtLogin: Bool {
         get { SMAppService.mainApp.status == .enabled }
