@@ -65,6 +65,7 @@ struct StackPanelView: View {
         .padding(.horizontal, 10).padding(.top, 14).padding(.bottom, 10)
         .frame(width: Theme.panelWidth)
         .frame(height: model.manualHeight, alignment: .top)
+        .frame(maxHeight: .infinity, alignment: .top)
         .background(Theme.panelTint(scheme))
         // Circular corners here match the NSVisualEffectView mask exactly; a continuous curve would show a double edge.
         .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .circular).strokeBorder(Theme.panelBorder(scheme), lineWidth: 1))

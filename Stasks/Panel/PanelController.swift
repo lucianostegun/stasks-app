@@ -34,6 +34,9 @@ final class PanelController {
         effect.maskImage = Self.roundedMask(radius: Theme.cornerRadius)
 
         let hosting = NSHostingView(rootView: content)
+        // No SwiftUI-derived min/max constraints on the window: they would pin the window's max height
+        // to the content height and block the user's vertical resize. We size the window ourselves.
+        hosting.sizingOptions = []
         hosting.translatesAutoresizingMaskIntoConstraints = false
         effect.addSubview(hosting)
         NSLayoutConstraint.activate([
