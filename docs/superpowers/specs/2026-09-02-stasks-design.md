@@ -85,7 +85,7 @@ struct Task: Identifiable, Codable, Equatable {
 
 ### 4.1 Hook script (`hooks/stasks-hook.sh`)
 
-Instalado em `~/.claude/settings.json` nos eventos `SessionStart`, `UserPromptSubmit`, `SessionEnd`. Lê o JSON do hook no stdin e faz append de uma linha em `inbox.jsonl`:
+Instalado em `~/.claude/settings.json` nos eventos `SessionStart`, `UserPromptSubmit`, `SessionEnd`, `Stop` e `Notification`. Lê o JSON do hook no stdin e faz append de uma linha em `inbox.jsonl`:
 
 ```json
 {"event":"SessionStart","session_id":"...","cwd":"...","transcript_path":"...","source":"startup|resume|clear|compact","iterm_session_id":"$ITERM_SESSION_ID","term_program":"$TERM_PROGRAM","ts":1788377555}
@@ -105,17 +105,18 @@ Regras por evento:
 
 | Evento | Ação |
 |---|---|
-| `SessionStart` (`startup`, `clear`) | Cria task `Open`, título = último componente de `cwd`, subtítulo = `cwd` abreviado com `~` |
-| `SessionStart` (`resume`) | Se existe task da sessão: reabre como `Open` se estava `Done`. Se não existe: cria como acima |
-| `SessionStart` (`compact`) | Ignora |
-| `UserPromptSubmit` | Se prompt casa `(?i)\b(tarefa concluída|task done|task complete)\b` → `Done`. Senão, se `!isPinnedTitle` e título ainda é o da pasta → título = prompt truncado em 80 chars, primeira linha, sem colapsar comandos que começam com `/` |
-| `SessionEnd` | `Done` |
+| `SessionStart` (qualquer origem) | Nunca cria task. Com `resume` e task existente `Done`: reabre como `Open` |
+| `UserPromptSubmit` sem task | Prompt vazio, comando (`/...`) ou frase de conclusão: nada. Caso contrário cria task `Open` com título = prompt (primeira linha, 80 chars), subtítulo = nome da pasta, `activity = working` |
+| `UserPromptSubmit` com task | Frase de conclusão `(?i)\b(tarefa concluída|task done|task complete)\b` → `Done`. Prompt real → `activity = working`. Título nunca muda por prompt |
+| `Stop` | Task ativa → `activity = finished` (Claude terminou a resposta) |
+| `Notification` | Task ativa → `activity = waitingInput` (Claude pede permissão ou input) |
+| `SessionEnd` | `Done`, `activity = nil` |
 
 Uma sessão com N prompts é uma única task. Chave de deduplicação: `sessionId`.
 
 ### 4.3 `TranscriptWatcher`
 
-Para cada task Claude não `Done`, observa `transcriptPath`. Ao ler linha `{"type":"custom-title","customTitle":"...","sessionId":"..."}`, aplica o título e marca `isPinnedTitle = true`. Para de observar quando a task vira `Done` ou o arquivo deixa de existir.
+Para cada task Claude não `Done`, observa `transcriptPath`. Ao ler linha `{"type":"custom-title","customTitle":"...","sessionId":"..."}`, aplica o título e marca `isPinnedTitle = true`. Ao ler uma linha `assistant` da thread principal com blocos de texto, o subtítulo passa a ser o começo dessa resposta (80 chars, primeira linha); blocos `thinking`, `tool_use`, `tool_result` e sidechains são ignorados. Para de observar quando a task vira `Done` ou o arquivo deixa de existir.
 
 ### 4.4 `HookInstaller`
 
@@ -171,7 +172,7 @@ Primeiro boot: `installedAt = now`; só mensagens das últimas 24h entram.
 
 ### 7.2 Painel
 
-- `NSPanel` (`.nonactivatingPanel`, `.borderless`), cantos 16pt, `NSVisualEffectView` com blur, hospedando SwiftUI. Largura 340pt. Altura cresce com o conteúdo até 70% da tela, depois rola.
+- Largura fixa 340pt. Altura automática (segue o conteúdo até 70% da tela, depois rola) até o usuário arrastar a borda inferior; a partir daí a altura é manual, persistida em `UserDefaults`, e a lista preenche a janela. Duplo clique no título "Stasks" volta ao automático.
 - Abre ancorado abaixo do ícone da menu bar.
 - Modo normal: fecha ao clicar fora ou `Esc`.
 - Modo "sempre visível" (📌): `level = .floating`, `hidesOnDeactivate = false`, `collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]`. Arrastável pelo header, posição persistida. Estado do pin persistido.
@@ -189,6 +190,7 @@ Primeiro boot: `installedAt = now`; só mensagens das últimas 24h entram.
 ```
 
 - Barra de status: filete 3pt na borda esquerda, com glow. Azul `#5aa9ff` Open, âmbar `#ffb84d` In Progress, verde `#43d17c` Done.
+- Atividade do Claude (`activity`): `waitingInput` → linha inteira pulsando em âmbar (fundo, contorno e glow, ciclo de 0.9s); `finished` → glow verde fixo e suave no contorno; `working` → sem efeito. Efeitos só em tasks ativas.
 - Ícone de origem: quadrado 14pt arredondado. Claude `#d97757`, Slack `#e01e5a`, Manual `#8a90b8`.
 - Tempo relativo: `agora`, `12m`, `2h`, `1d`. Done: riscado, opacidade 50%.
 - Hover: fundo `white 6%` (escuro) ou `white 70%` (claro).

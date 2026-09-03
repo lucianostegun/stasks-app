@@ -12,6 +12,10 @@ public enum CompletionPhrase {
     }
 }
 
+/// Applies Claude Code hook events to the store.
+///
+/// A session becomes a task only when the user sends the first real prompt (not a slash command).
+/// Session start never creates anything; it only reopens a Done task on resume.
 @MainActor
 public struct InboxProcessor {
     private let store: TaskStore
@@ -31,43 +35,39 @@ public struct InboxProcessor {
         case .sessionStart: handleStart(e)
         case .userPromptSubmit: handlePrompt(e)
         case .sessionEnd: handleEnd(e)
+        case .stop: setActivity(e, .finished)
+        case .notification: setActivity(e, .waitingInput)
         }
     }
 
     private func handleStart(_ e: InboxEvent) {
-        if e.source == "compact" { return }
-        if let existing = store.task(claudeSessionId: e.sessionId) {
-            if existing.status == .done { store.setStatus(id: existing.id, .open) }
-            return
-        }
-        createTask(from: e)
-    }
-
-    @discardableResult
-    private func createTask(from e: InboxEvent) -> TaskItem {
-        let task = TaskItem.claude(sessionId: e.sessionId,
-                                   cwd: e.cwd ?? FileManager.default.homeDirectoryForCurrentUser.path,
-                                   transcriptPath: e.transcriptPath ?? "",
-                                   itermSessionId: e.itermSessionId,
-                                   now: now())
-        store.add(task)
-        return task
+        guard e.source == "resume", let existing = store.task(claudeSessionId: e.sessionId), existing.status == .done else { return }
+        store.setStatus(id: existing.id, .open)
     }
 
     private func handlePrompt(_ e: InboxEvent) {
         guard let prompt = e.prompt else { return }
-        let task = store.task(claudeSessionId: e.sessionId) ?? createTask(from: e)
+        let trimmed = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        let isCommand = trimmed.isEmpty || trimmed.hasPrefix("/")
 
-        if CompletionPhrase.matches(prompt) {
-            store.setStatus(id: task.id, .done)
+        if let task = store.task(claudeSessionId: e.sessionId) {
+            if CompletionPhrase.matches(prompt) {
+                store.setStatus(id: task.id, .done)
+                return
+            }
+            if !isCommand { store.setActivity(id: task.id, .working) }
             return
         }
-        guard !task.isPinnedTitle else { return }
-        let trimmed = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, !trimmed.hasPrefix("/") else { return }
-        let folderTitle = TaskItem.folderName(cwd: claudeCwd(task) ?? "")
-        guard task.title == folderTitle else { return }
-        store.setTitle(id: task.id, trimmed, pinned: false)
+
+        // No task yet: only a real prompt creates one, titled with that prompt.
+        guard !isCommand, !CompletionPhrase.matches(prompt) else { return }
+        let cwd = e.cwd ?? FileManager.default.homeDirectoryForCurrentUser.path
+        var task = TaskItem.claude(sessionId: e.sessionId, cwd: cwd, transcriptPath: e.transcriptPath ?? "",
+                                   itermSessionId: e.itermSessionId, now: now())
+        task.title = TaskItem.truncatedTitle(trimmed)
+        task.subtitle = TaskItem.folderName(cwd: cwd)
+        task.activity = .working
+        store.add(task)
     }
 
     private func handleEnd(_ e: InboxEvent) {
@@ -75,8 +75,8 @@ public struct InboxProcessor {
         store.setStatus(id: task.id, .done)
     }
 
-    private func claudeCwd(_ task: TaskItem) -> String? {
-        if case let .claude(_, _, cwd, _) = task.source { return cwd }
-        return nil
+    private func setActivity(_ e: InboxEvent, _ activity: ClaudeActivity) {
+        guard let task = store.task(claudeSessionId: e.sessionId), task.status.isActive else { return }
+        store.setActivity(id: task.id, activity)
     }
 }

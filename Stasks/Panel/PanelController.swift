@@ -12,10 +12,14 @@ final class PanelController {
     private weak var anchorWindow: NSWindow?
     private var contentSize = CGSize(width: Theme.panelWidth, height: 200)
     private var savedOrigin: CGPoint?
+    /// True while we set the frame ourselves, so a user drag can be told apart from our own layout.
+    private var programmaticResize = false
 
     var isVisible: Bool { window.isVisible }
     /// Called at the end of every `show`, so the app can refresh on-demand work such as provisional title retries.
     var onShow: (() -> Void)?
+    /// Fires with the new height after the user drags the bottom edge, or nil when the height goes back to automatic.
+    var onManualHeightChanged: ((CGFloat?) -> Void)?
 
     init(content: some View, preferences: Preferences) {
         self.preferences = preferences
@@ -41,8 +45,15 @@ final class PanelController {
         window.contentView = effect
         window.onEscape = { [weak self] in if self?.preferences.pinned == false { self?.hide() } }
 
-        NotificationCenter.default.addObserver(forName: NSWindow.didMoveNotification, object: window, queue: .main) { [weak self] _ in
+        let nc = NotificationCenter.default
+        nc.addObserver(forName: NSWindow.didMoveNotification, object: window, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.persistOrigin() }
+        }
+        nc.addObserver(forName: NSWindow.didEndLiveResizeNotification, object: window, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.userResized() }
+        }
+        nc.addObserver(forName: NSWindow.didResizeNotification, object: window, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.window.invalidateShadow() }
         }
         setPinned(preferences.pinned)
     }
@@ -78,37 +89,74 @@ final class PanelController {
     func contentSizeChanged(_ size: CGSize) {
         guard size.height > 0, abs(size.height - contentSize.height) > 0.5 else { return }
         contentSize = CGSize(width: Theme.panelWidth, height: size.height)
+        // With a manual height the content fills the window; only automatic mode follows the content.
+        if isVisible, preferences.panelHeight == nil { layout(animated: true) }
+    }
+
+    /// Back to automatic height (content-sized).
+    func resetHeight() {
+        preferences.panelHeight = nil
+        onManualHeightChanged?(nil)
         if isVisible { layout(animated: true) }
     }
 
     // MARK: Layout
 
+    private var targetHeight: CGFloat {
+        if let h = preferences.panelHeight { return CGFloat(h) }
+        return contentSize.height
+    }
+
     private func layout(animated: Bool = false) {
-        let size = contentSize
+        let size = CGSize(width: Theme.panelWidth, height: targetHeight)
         var origin: NSPoint
         if preferences.pinned, let saved = savedOrigin {
+            // Keep the top edge where the user left it when the height changes.
             origin = NSPoint(x: saved.x, y: saved.y)
         } else if let a = lastAnchorFrame {
             origin = NSPoint(x: a.midX - size.width / 2, y: a.minY - size.height - 6)
         } else {
-            origin = window.frame.origin
+            origin = NSPoint(x: window.frame.minX, y: window.frame.maxY - size.height)
         }
         if let screen = NSScreen.screens.first(where: { $0.frame.contains(lastAnchorFrame?.origin ?? origin) }) ?? NSScreen.main {
             let v = screen.visibleFrame
             origin.x = min(max(origin.x, v.minX + 8), v.maxX - size.width - 8)
             origin.y = min(max(origin.y, v.minY + 8), v.maxY - size.height - 8)
         }
+        programmaticResize = true
         window.setFrame(NSRect(origin: origin, size: size), display: true, animate: animated && isVisible)
+        programmaticResize = false
         window.invalidateShadow()
     }
 
-    /// Stretchable rounded-rect mask; the corners stay crisp at any panel size thanks to capInsets.
+    private func userResized() {
+        guard !programmaticResize else { return }
+        let h = window.frame.height
+        preferences.panelHeight = Double(h)
+        onManualHeightChanged?(h)
+        if preferences.pinned { persistOrigin() }
+    }
+
+    /// Stretchable rounded-rect mask rasterized at the screen's scale with antialiasing, so the corners stay smooth.
     private static func roundedMask(radius: CGFloat) -> NSImage {
-        let side = radius * 2 + 1
-        let image = NSImage(size: NSSize(width: side, height: side), flipped: false) { rect in
-            NSColor.black.setFill()
-            NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).fill()
-            return true
+        let side = radius * 2 + 2
+        let scale = NSScreen.main?.backingScaleFactor ?? 2
+        let px = Int((side * scale).rounded(.up))
+        let image = NSImage(size: NSSize(width: side, height: side))
+        if let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: px, pixelsHigh: px, bitsPerSample: 8,
+                                      samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                      colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) {
+            rep.size = NSSize(width: side, height: side)
+            NSGraphicsContext.saveGraphicsState()
+            if let ctx = NSGraphicsContext(bitmapImageRep: rep) {
+                NSGraphicsContext.current = ctx
+                ctx.shouldAntialias = true
+                ctx.imageInterpolation = .high
+                NSColor.black.setFill()
+                NSBezierPath(roundedRect: NSRect(x: 0, y: 0, width: side, height: side), xRadius: radius, yRadius: radius).fill()
+            }
+            NSGraphicsContext.restoreGraphicsState()
+            image.addRepresentation(rep)
         }
         image.capInsets = NSEdgeInsets(top: radius, left: radius, bottom: radius, right: radius)
         image.resizingMode = .stretch

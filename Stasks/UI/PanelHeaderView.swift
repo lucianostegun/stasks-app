@@ -9,6 +9,8 @@ struct PanelHeaderView: View {
     var body: some View {
         HStack(spacing: 8) {
             Text("Stasks").font(.system(size: 15, weight: .bold)).tracking(-0.2)
+                .onTapGesture(count: 2) { model.onResetHeight() }
+                .help("Duplo clique: altura automática")
             Text("\(model.store.activeCount)")
                 .font(.system(size: 11, weight: .semibold))
                 .padding(.horizontal, 8).padding(.vertical, 2)

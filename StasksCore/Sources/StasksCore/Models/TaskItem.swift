@@ -9,6 +9,13 @@ public enum StackOrder: String, Codable, Sendable, CaseIterable {
     case lifo, fifo
 }
 
+/// What a Claude Code session is doing right now, driven by the UserPromptSubmit, Stop and Notification hooks.
+public enum ClaudeActivity: String, Codable, Sendable {
+    case working        // user sent a prompt, Claude is answering
+    case waitingInput   // Claude asked for permission or input
+    case finished       // Claude finished its answer and is idle
+}
+
 public enum TaskSourceKind: String, Codable, Sendable {
     case claude, slack, manual
 }
@@ -47,6 +54,7 @@ public struct TaskItem: Identifiable, Codable, Equatable, Sendable {
     public var completedAt: Date?
     public var isPinnedTitle: Bool
     public var isProvisionalTitle: Bool
+    public var activity: ClaudeActivity?
 
     public init(id: UUID = UUID(), title: String, subtitle: String?, source: TaskSource, status: TaskStatus = .open,
                 createdAt: Date, completedAt: Date? = nil, isPinnedTitle: Bool = false, isProvisionalTitle: Bool = false) {
@@ -59,6 +67,7 @@ public struct TaskItem: Identifiable, Codable, Equatable, Sendable {
         self.completedAt = completedAt
         self.isPinnedTitle = isPinnedTitle
         self.isProvisionalTitle = isProvisionalTitle
+        self.activity = nil
     }
 
     public static let maxTitleLength = 80

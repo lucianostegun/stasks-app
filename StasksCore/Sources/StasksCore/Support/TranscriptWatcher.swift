@@ -6,11 +6,14 @@ public final class TranscriptWatcher: @unchecked Sendable {
     private struct Entry { let watcher: FileWatcher; var offset: UInt64 }
 
     private let onTitle: @Sendable (String, String) -> Void
+    private let onMessage: (@Sendable (String, String) -> Void)?
     private let queue = DispatchQueue(label: "stasks.transcript", qos: .utility)
     private var entries: [String: Entry] = [:]
 
-    public init(onTitle: @escaping @Sendable (_ sessionId: String, _ title: String) -> Void) {
+    public init(onTitle: @escaping @Sendable (_ sessionId: String, _ title: String) -> Void,
+                onMessage: (@Sendable (_ sessionId: String, _ text: String) -> Void)? = nil) {
         self.onTitle = onTitle
+        self.onMessage = onMessage
     }
 
     public func watch(sessionId: String, path: String) {
@@ -55,6 +58,9 @@ public final class TranscriptWatcher: @unchecked Sendable {
         if let title = TranscriptParser.latestCustomTitle(in: data) {
             Log.transcript.info("custom title for \(sessionId, privacy: .public)")
             onTitle(sessionId, title)
+        }
+        if let onMessage, let text = TranscriptParser.lastAssistantText(in: data) {
+            onMessage(sessionId, text)
         }
     }
 }

@@ -10,11 +10,14 @@ final class PanelModel {
     var slackState: SlackConnectionState = .idle
     var llmError: String?
     var maxListHeight: CGFloat = 500
+    /// Set when the user resized the panel; the list then fills the window instead of sizing to content.
+    var manualHeight: CGFloat?
     var now = Date()
 
     @ObservationIgnored var onSizeChange: (CGSize) -> Void = { _ in }
     @ObservationIgnored var onOpenSettings: () -> Void = {}
     @ObservationIgnored var onPinChanged: (Bool) -> Void = { _ in }
+    @ObservationIgnored var onResetHeight: () -> Void = {}
     @ObservationIgnored private var ticker: Timer?
 
     init(store: TaskStore, prefs: Preferences) {

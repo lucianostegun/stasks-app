@@ -20,6 +20,7 @@ LINE="$(printf '%s' "$INPUT" | "$JQ" -c \
     source: .source,
     prompt: .prompt,
     reason: .reason,
+    message: .message,
     iterm_session_id: (if $iterm == "" then null else $iterm end),
     term_program: (if $term == "" then null else $term end),
     ts: $ts

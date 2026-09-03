@@ -29,8 +29,9 @@ Stasks is a macOS menu bar app that keeps one stack of tasks from three sources:
 ## Manual smoke checklist
 
 Claude
-- [ ] `cd ~/Projetos/Stasks && claude` in iTerm2: a task "Stasks" appears within 1s, status Open.
-- [ ] First prompt "teste de titulo" becomes the title. Second prompt does not change it.
+- [ ] `cd ~/Projetos/Stasks && claude` in iTerm2: nothing appears yet. Send "teste de titulo": a task with that title appears within 1s, status Open, subtitle "Stasks".
+- [ ] When Claude answers, the subtitle becomes the start of the answer and the row shows a soft green glow. Send a second prompt: the title does not change and the glow clears. When Claude asks for permission, the row pulses amber.
+- [ ] Slash commands alone (`/clear`, `/help`) never create a task.
 - [ ] `/rename Renomeado pelo rename` updates the title within 2s.
 - [ ] Typing "task done" marks Done and moves it to Concluídas. `/exit` on another session also marks Done.
 - [ ] `claude --resume` on a Done session reopens it.
@@ -46,6 +47,7 @@ Slack
 
 Panel
 - [ ] Toggle LIFO/FIFO moves the new-task field and reverses order.
+- [ ] Drag the bottom edge: the panel keeps that height (also after relaunch) and the list scrolls inside it. Double click the "Stasks" title: height goes back to automatic.
 - [ ] 📌 keeps the panel open when clicking other apps, survives switching Spaces, is draggable, position persists after relaunch.
 - [ ] Unpinned: click outside or Esc hides it. ⌥⌘S toggles it from anywhere.
 - [ ] Right click on a row: status menu works; Editar título and double click edit inline; Remover removes.

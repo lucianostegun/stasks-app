@@ -43,6 +43,13 @@ final class Preferences {
     var pinned: Bool { didSet { d.set(pinned, forKey: "pinned") } }
     var completedCollapsed: Bool { didSet { d.set(completedCollapsed, forKey: "completedCollapsed") } }
     /// Persisted as two Doubles so the panel origin never contends with state.json, which the Slack poller also writes.
+    /// nil = the panel height follows its content; a value = the user dragged the bottom edge.
+    var panelHeight: Double? {
+        didSet {
+            if let h = panelHeight { d.set(h, forKey: "panelHeight") } else { d.removeObject(forKey: "panelHeight") }
+        }
+    }
+
     var panelOrigin: CGPoint? {
         didSet {
             if let o = panelOrigin {
@@ -61,6 +68,7 @@ final class Preferences {
         hotKey = HotKeyChoice(rawValue: d.string(forKey: "hotKey") ?? "") ?? .optCmdS
         pinned = d.bool(forKey: "pinned")
         completedCollapsed = d.object(forKey: "completedCollapsed") as? Bool ?? true
+        panelHeight = d.object(forKey: "panelHeight") as? Double
         if let x = d.object(forKey: "panelOriginX") as? Double, let y = d.object(forKey: "panelOriginY") as? Double {
             panelOrigin = CGPoint(x: x, y: y)
         } else {

@@ -35,6 +35,7 @@ public final class TaskStore {
         update(id: id) { t in
             t.status = status
             t.completedAt = status == .done ? stamp : nil
+            if status == .done { t.activity = nil }
         }
     }
 
@@ -44,6 +45,14 @@ public final class TaskStore {
             t.isProvisionalTitle = false
             if pinned { t.isPinnedTitle = true }
         }
+    }
+
+    public func setSubtitle(id: UUID, _ subtitle: String) {
+        update(id: id) { $0.subtitle = subtitle }
+    }
+
+    public func setActivity(id: UUID, _ activity: ClaudeActivity?) {
+        update(id: id) { $0.activity = activity }
     }
 
     public func remove(id: UUID) {

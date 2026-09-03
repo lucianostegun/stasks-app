@@ -37,7 +37,7 @@ struct StackPanelView: View {
                     ForEach(active) { task in row(task) }
                 }
             }
-            .frame(maxHeight: model.maxListHeight)
+            .frame(maxHeight: model.manualHeight == nil ? model.maxListHeight : .infinity)
             .scrollBounceBehavior(.basedOnSize)
 
             if model.prefs.order == .fifo { newField.padding(.top, 8) }
@@ -64,8 +64,10 @@ struct StackPanelView: View {
         }
         .padding(.horizontal, 10).padding(.top, 14).padding(.bottom, 10)
         .frame(width: Theme.panelWidth)
+        .frame(height: model.manualHeight, alignment: .top)
         .background(Theme.panelTint(scheme))
-        .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous).strokeBorder(Theme.panelBorder(scheme), lineWidth: 1))
+        // Circular corners here match the NSVisualEffectView mask exactly; a continuous curve would show a double edge.
+        .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .circular).strokeBorder(Theme.panelBorder(scheme), lineWidth: 1))
         .animation(.spring(duration: 0.25), value: active.map(\.id))
         .animation(.spring(duration: 0.25), value: completed.map(\.id))
         .onGeometryChange(for: CGSize.self) { $0.size } action: { model.onSizeChange($0) }

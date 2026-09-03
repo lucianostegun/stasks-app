@@ -56,6 +56,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         model.onSizeChange = { [weak self] in self?.panel.contentSizeChanged($0) }
         model.onPinChanged = { [weak self] in self?.panel.setPinned($0) }
         model.onOpenSettings = { [weak self] in self?.openSettings() }
+        model.manualHeight = prefs.panelHeight.map { CGFloat($0) }
+        model.onResetHeight = { [weak self] in self?.panel.resetHeight() }
+        panel.onManualHeightChanged = { [weak self] h in self?.model.manualHeight = h }
         panel.onShow = { [weak self] in
             Task { @MainActor in
                 guard let self else { return }
@@ -122,12 +125,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func setupClaude() {
         let processor = InboxProcessor(store: store)
-        transcripts = TranscriptWatcher { [weak self] sessionId, title in
+        transcripts = TranscriptWatcher(onTitle: { [weak self] sessionId, title in
             Task { @MainActor in
                 guard let self, let t = self.store.task(claudeSessionId: sessionId) else { return }
                 self.store.setTitle(id: t.id, title, pinned: true)
             }
-        }
+        }, onMessage: { [weak self] sessionId, text in
+            // Subtitle shows the start of Claude's latest answer instead of the working folder.
+            Task { @MainActor in
+                guard let self, let t = self.store.task(claudeSessionId: sessionId) else { return }
+                self.store.setSubtitle(id: t.id, TaskItem.truncatedTitle(text))
+            }
+        })
         drainer = InboxDrainer(directory: supportDir) { events in
             Task { @MainActor in processor.apply(events) }
         }

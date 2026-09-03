@@ -14,8 +14,17 @@ struct TaskRowView: View {
     @State private var editing = false
     @State private var draft = ""
     @FocusState private var focused: Bool
+    @State private var pulse = false
 
     private var isDone: Bool { task.status == .done }
+    private var activity: ClaudeActivity? { isDone ? nil : task.activity }
+    private var glowColor: Color? {
+        switch activity {
+        case .waitingInput: return Theme.statusColor(.inProgress)
+        case .finished: return Theme.statusColor(.done)
+        default: return nil
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -59,7 +68,9 @@ struct TaskRowView: View {
                 .animation(.spring(duration: 0.2), value: task.status)
         }
         .background(hovering ? Theme.rowHover(scheme) : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(activityGlow)
         .contentShape(Rectangle())
+        .onAppear { pulse = true }
         .onHover { hovering = $0 }
         .onTapGesture(count: 2) { startEditing() }
         .onTapGesture(count: 1) { if !editing { onOpen() } }
@@ -73,6 +84,21 @@ struct TaskRowView: View {
             if task.source.kind != .manual { Button("Abrir origem") { onOpen() } }
             Button("Editar título") { startEditing() }
             Button("Remover", role: .destructive) { onRemove() }
+        }
+    }
+
+    /// Waiting for input: a strong amber pulse across the row. Finished: a calm green glow on the edge.
+    @ViewBuilder private var activityGlow: some View {
+        if let color = glowColor {
+            let waiting = activity == .waitingInput
+            let shape = RoundedRectangle(cornerRadius: 10, style: .continuous)
+            ZStack {
+                shape.fill(color.opacity(waiting ? (pulse ? 0.26 : 0.08) : 0.10))
+                shape.strokeBorder(color.opacity(waiting ? (pulse ? 0.9 : 0.35) : 0.45), lineWidth: 1)
+                    .shadow(color: color.opacity(waiting ? (pulse ? 0.8 : 0.2) : 0.35), radius: waiting ? (pulse ? 14 : 4) : 8)
+            }
+            .animation(waiting ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true) : .easeInOut(duration: 0.3), value: pulse)
+            .allowsHitTesting(false)
         }
     }
 

@@ -5,6 +5,8 @@ public struct InboxEvent: Decodable, Equatable, Sendable {
         case sessionStart = "SessionStart"
         case userPromptSubmit = "UserPromptSubmit"
         case sessionEnd = "SessionEnd"
+        case stop = "Stop"
+        case notification = "Notification"
     }
 
     public let event: Kind
@@ -16,11 +18,13 @@ public struct InboxEvent: Decodable, Equatable, Sendable {
     public let reason: String?
     public let itermSessionId: String?
     public let ts: Double?
+    public let message: String?
 
     public init(event: Kind, sessionId: String, cwd: String?, transcriptPath: String?, source: String?,
-                prompt: String?, reason: String?, itermSessionId: String?, ts: Double?) {
+                prompt: String?, reason: String?, itermSessionId: String?, ts: Double?, message: String? = nil) {
         self.event = event; self.sessionId = sessionId; self.cwd = cwd; self.transcriptPath = transcriptPath
         self.source = source; self.prompt = prompt; self.reason = reason; self.itermSessionId = itermSessionId; self.ts = ts
+        self.message = message
     }
 }
 

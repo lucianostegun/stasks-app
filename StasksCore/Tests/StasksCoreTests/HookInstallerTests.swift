@@ -35,7 +35,8 @@ final class HookInstallerTests: XCTestCase {
         XCTAssertEqual(commands(obj, "SessionStart"), ["node other.js", inst.command])
         XCTAssertEqual(commands(obj, "UserPromptSubmit"), [inst.command])
         XCTAssertEqual(commands(obj, "SessionEnd"), [inst.command])
-        XCTAssertEqual(commands(obj, "Notification"), ["say hi"])
+        XCTAssertEqual(commands(obj, "Stop"), [inst.command])
+        XCTAssertEqual(commands(obj, "Notification"), ["say hi", inst.command])
         XCTAssertEqual(try inst.status(), .installed)
     }
 
@@ -47,7 +48,8 @@ final class HookInstallerTests: XCTestCase {
     }
 
     func testOutdatedWhenPathDiffersAndInstallReplaces() throws {
-        try write(#"{"hooks":{"SessionStart":[{"hooks":[{"type":"command","command":"bash \"/old/stasks-hook.sh\""}]}],"UserPromptSubmit":[{"hooks":[{"type":"command","command":"bash \"/old/stasks-hook.sh\""}]}],"SessionEnd":[{"hooks":[{"type":"command","command":"bash \"/old/stasks-hook.sh\""}]}]}}"#)
+        let old = #"[{"hooks":[{"type":"command","command":"bash \"/old/stasks-hook.sh\""}]}]"#
+        try write(#"{"hooks":{"SessionStart":\#(old),"UserPromptSubmit":\#(old),"SessionEnd":\#(old),"Notification":\#(old),"Stop":\#(old)}}"#)
         let inst = HookInstaller(settingsURL: url, scriptPath: script)
         XCTAssertEqual(try inst.status(), .outdated(currentCommand: "bash \"/old/stasks-hook.sh\""))
         _ = try inst.install()

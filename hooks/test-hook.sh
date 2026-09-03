@@ -41,6 +41,12 @@ assert_eq "$(wc -l < "$TMP/inbox.jsonl" | tr -d ' ')" "2" "garbage not appended"
 bash "$HOOK" < /dev/null; RC=$?
 assert_eq "$RC" "0" "exit 0 on empty stdin"
 
+# 6b. Notification carries message
+echo '{"hook_event_name":"Notification","session_id":"S1","message":"Claude needs permission"}' | bash "$HOOK"
+LINE="$(tail -n1 "$TMP/inbox.jsonl")"
+assert_eq "$(echo "$LINE" | jq -r .event)" "Notification" "notification event"
+assert_eq "$(echo "$LINE" | jq -r .message)" "Claude needs permission" "notification message"
+
 # 6. No ITERM env -> null
 echo '{"hook_event_name":"SessionEnd","session_id":"S1","reason":"exit"}' | env -u ITERM_SESSION_ID bash "$HOOK"
 LINE="$(tail -n1 "$TMP/inbox.jsonl")"

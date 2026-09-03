@@ -7,7 +7,7 @@ public enum HookStatus: Equatable, Sendable {
 }
 
 public struct HookInstaller {
-    public static let events = ["SessionStart", "UserPromptSubmit", "SessionEnd"]
+    public static let events = ["SessionStart", "UserPromptSubmit", "SessionEnd", "Stop", "Notification"]
     private static let marker = "stasks-hook.sh"
 
     public let settingsURL: URL
