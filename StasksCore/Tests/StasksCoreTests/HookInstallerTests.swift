@@ -65,4 +65,22 @@ final class HookInstallerTests: XCTestCase {
         _ = try inst.install()
         XCTAssertEqual(try inst.status(), .installed)
     }
+
+    func testInstallCollapsesDuplicateStasksEntries() throws {
+        try write(#"{"hooks":{"SessionStart":[{"hooks":[{"type":"command","command":"node other.js"}],"matcher":"foo"},{"hooks":[{"type":"command","command":"bash \"/old/stasks-hook.sh\""}]},{"hooks":[{"type":"command","command":"bash \"/older/stasks-hook.sh\""}]}]}}"#)
+        let inst = HookInstaller(settingsURL: url, scriptPath: script)
+        _ = try inst.install()
+        let obj = try read()
+
+        XCTAssertEqual(commands(obj, "SessionStart"), ["node other.js", inst.command])
+
+        let groups = (obj["hooks"] as? [String: Any])?["SessionStart"] as? [[String: Any]] ?? []
+        let nonStasksGroup = groups.first { group in
+            let hooks = group["hooks"] as? [[String: Any]] ?? []
+            return hooks.contains { ($0["command"] as? String) == "node other.js" }
+        }
+        XCTAssertEqual(nonStasksGroup?["matcher"] as? String, "foo")
+
+        XCTAssertEqual(try inst.status(), .installed)
+    }
 }

@@ -43,19 +43,27 @@ public struct HookInstaller {
         var hooks = root["hooks"] as? [String: Any] ?? [:]
         for event in Self.events {
             var groups = hooks[event] as? [[String: Any]] ?? []
-            var replaced = false
-            groups = groups.map { group in
+            var found = false
+            groups = groups.compactMap { group in
                 var g = group
-                var inner = g["hooks"] as? [[String: Any]] ?? []
-                inner = inner.map { h in
-                    guard let c = h["command"] as? String, c.contains(Self.marker) else { return h }
-                    replaced = true
-                    var hh = h; hh["command"] = command; return hh
+                let inner = g["hooks"] as? [[String: Any]] ?? []
+                var newInner: [[String: Any]] = []
+                for hook in inner {
+                    guard let c = hook["command"] as? String, c.contains(Self.marker) else {
+                        newInner.append(hook)
+                        continue
+                    }
+                    if !found {
+                        found = true
+                        var hh = hook
+                        hh["command"] = command
+                        newInner.append(hh)
+                    }
                 }
-                g["hooks"] = inner
-                return g
+                g["hooks"] = newInner
+                return newInner.isEmpty ? nil : g
             }
-            if !replaced {
+            if !found {
                 groups.append(["hooks": [["type": "command", "command": command]]])
             }
             hooks[event] = groups
