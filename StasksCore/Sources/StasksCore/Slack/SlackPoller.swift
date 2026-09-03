@@ -27,6 +27,7 @@ public final class SlackPoller {
     @ObservationIgnored private var paused = false
     @ObservationIgnored private var backingOff = false
     @ObservationIgnored private var authFailed = false
+    @ObservationIgnored private var isPolling = false
     @ObservationIgnored private var identity: SlackAuth?
     @ObservationIgnored private var channelCache: [String: (SlackChannel, Date)] = [:]
     @ObservationIgnored private var userCache: [String: (SlackUser, Date)] = [:]
@@ -77,6 +78,9 @@ public final class SlackPoller {
     public func pollOnce() async {
         guard let client = clientProvider() else { connectionState = .idle; return }
         if authFailed { return }
+        guard !isPolling else { return }
+        isPolling = true
+        defer { isPolling = false }
 
         do {
             let auth = try await ensureIdentity(client)

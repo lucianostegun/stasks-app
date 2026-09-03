@@ -7,13 +7,16 @@ final class SlackPollerTests: XCTestCase {
         var items: [SlackReactionItem] = []
         var authError: SlackError?
         var listError: SlackError?
+        var listDelayNanos: UInt64 = 0
         var calls: [String] = []
         func authTest() async throws -> SlackAuth {
             calls.append("auth"); if let e = authError { throw e }
             return SlackAuth(url: "u", team: "SOCi", user: "me", teamId: "T1", userId: "UME")
         }
         func reactionsList(limit: Int) async throws -> [SlackReactionItem] {
-            calls.append("list"); if let e = listError { throw e }; return items
+            calls.append("list")
+            if listDelayNanos > 0 { try? await Task.sleep(nanoseconds: listDelayNanos) }
+            if let e = listError { throw e }; return items
         }
         func conversationInfo(id: String) async throws -> SlackChannel {
             calls.append("channel:\(id)")
@@ -123,5 +126,16 @@ final class SlackPollerTests: XCTestCase {
         slack.items = items(#"[{"type":"message","channel":"D1","message":{"user":"UANA","text":"hey","ts":"1788300000.1","reactions":[{"name":"eyes","users":["UME"],"count":1}]}}]"#)
         await poller().pollOnce()
         XCTAssertEqual(store.task(slackChannelId: "D1", ts: "1788300000.1")?.subtitle, "DM · Ana")
+    }
+
+    func testOverlappingPollOnceRunsOnlyOne() async {
+        slack.listDelayNanos = 50_000_000
+        slack.items = items(#"[{"type":"message","channel":"C1","message":{"user":"UANA","text":"hey","ts":"1788300000.1","reactions":[{"name":"eyes","users":["UME"],"count":1}]}}]"#)
+        let p = poller()
+        async let a: Void = p.pollOnce()
+        async let b: Void = p.pollOnce()
+        _ = await (a, b)
+        XCTAssertEqual(slack.calls.filter { $0 == "list" }.count, 1)
+        XCTAssertEqual(store.tasks.count, 1)
     }
 }
