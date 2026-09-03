@@ -47,6 +47,16 @@ public final class FileWatcher: @unchecked Sendable {
         src.setCancelHandler { Darwin.close(capturedFd) }
         source = src
         src.resume()
+        // Catch up immediately: content may have been written between the previous descriptor
+        // becoming invalid (a delete/rename that triggered this reopen, or the path not
+        // existing yet on a scheduleRetry recovery) and this (re)open completing. No further
+        // vnode event will ever fire for changes that already happened before the new kevent
+        // was armed, so without this, those changes would only surface on the next unrelated
+        // write. This also covers the very first open from start(): the small window between
+        // start() returning and the kevent actually being armed on the queue means a caller
+        // that mutates the watched path right away could otherwise race the same way. Any
+        // caller's own separate initial read becomes redundant here, but harmless.
+        onChange()
     }
 
     private func scheduleRetry() {
