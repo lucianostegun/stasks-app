@@ -6,8 +6,7 @@ struct StasksApp: App {
 
     var body: some Scene {
         Settings {
-            Text("Settings placeholder")
-                .frame(width: 420, height: 300)
+            if let model = appDelegate.settingsModel { SettingsView(model: model) } else { Text("…") }
         }
     }
 }

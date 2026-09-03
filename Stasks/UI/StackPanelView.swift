@@ -20,7 +20,7 @@ struct StackPanelView: View {
                     HStack(spacing: 6) {
                         Circle().fill(Color.red).frame(width: 6, height: 6)
                         Text(banner).font(.system(size: 11)).lineLimit(1)
-                        Spacer(); Text("Settings").font(.system(size: 11, weight: .semibold))
+                        Spacer(); Text("Ajustes").font(.system(size: 11, weight: .semibold))
                     }
                 }
                 .buttonStyle(.plain).foregroundStyle(.secondary)
@@ -66,8 +66,8 @@ struct StackPanelView: View {
         .frame(width: Theme.panelWidth)
         .background(Theme.panelTint(scheme))
         .overlay(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous).strokeBorder(Theme.panelBorder(scheme), lineWidth: 1))
-        .animation(.spring(duration: 0.3), value: active.map(\.id))
-        .animation(.spring(duration: 0.3), value: completed.map(\.id))
+        .animation(.spring(duration: 0.25), value: active.map(\.id))
+        .animation(.spring(duration: 0.25), value: completed.map(\.id))
         .onGeometryChange(for: CGSize.self) { $0.size } action: { model.onSizeChange($0) }
     }
 

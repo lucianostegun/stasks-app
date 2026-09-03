@@ -56,7 +56,7 @@ struct TaskRowView: View {
                 .frame(width: 3)
                 .shadow(color: Theme.statusColor(task.status).opacity(0.6), radius: 4)
                 .padding(.vertical, 10).padding(.leading, 4)
-                .animation(.easeInOut(duration: 0.2), value: task.status)
+                .animation(.spring(duration: 0.2), value: task.status)
         }
         .background(hovering ? Theme.rowHover(scheme) : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .contentShape(Rectangle())
