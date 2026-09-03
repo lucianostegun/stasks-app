@@ -10,13 +10,16 @@ final class PanelController {
     private var globalMonitor: Any?
     private var localMonitor: Any?
     private var lastAnchorFrame: NSRect?
+    private weak var anchorWindow: NSWindow?
     private var contentSize = CGSize(width: Theme.panelWidth, height: 200)
+    private var savedOrigin: CGPoint?
 
     var isVisible: Bool { window.isVisible }
 
     init(content: some View, preferences: Preferences, stateURL: URL) {
         self.preferences = preferences
         self.stateURL = stateURL
+        self.savedOrigin = AppState.load(from: stateURL, now: Date()).panelOrigin
 
         let effect = NSVisualEffectView()
         effect.material = .hudWindow
@@ -50,7 +53,10 @@ final class PanelController {
     func toggle(anchor: NSStatusBarButton?) { isVisible ? hide() : show(anchor: anchor) }
 
     func show(anchor: NSStatusBarButton?) {
-        if let anchor, let w = anchor.window { lastAnchorFrame = w.convertToScreen(anchor.convert(anchor.bounds, to: nil)) }
+        if let anchor, let w = anchor.window {
+            lastAnchorFrame = w.convertToScreen(anchor.convert(anchor.bounds, to: nil))
+            anchorWindow = w
+        }
         layout()
         window.makeKeyAndOrderFront(nil)
         installMonitors()
@@ -79,8 +85,7 @@ final class PanelController {
     private func layout(animated: Bool = false) {
         let size = contentSize
         var origin: NSPoint
-        let state = AppState.load(from: stateURL, now: Date())
-        if preferences.pinned, let saved = state.panelOrigin {
+        if preferences.pinned, let saved = savedOrigin {
             origin = NSPoint(x: saved.x, y: saved.y)
         } else if let a = lastAnchorFrame {
             origin = NSPoint(x: a.midX - size.width / 2, y: a.minY - size.height - 6)
@@ -90,7 +95,7 @@ final class PanelController {
         if let screen = NSScreen.screens.first(where: { $0.frame.contains(lastAnchorFrame?.origin ?? origin) }) ?? NSScreen.main {
             let v = screen.visibleFrame
             origin.x = min(max(origin.x, v.minX + 8), v.maxX - size.width - 8)
-            origin.y = max(origin.y, v.minY + 8)
+            origin.y = min(max(origin.y, v.minY + 8), v.maxY - size.height - 8)
         }
         window.setFrame(NSRect(origin: origin, size: size), display: true, animate: animated && isVisible)
     }
@@ -102,6 +107,7 @@ final class PanelController {
 
     private func persistOrigin() {
         guard preferences.pinned else { return }
+        savedOrigin = window.frame.origin
         var s = AppState.load(from: stateURL, now: Date())
         s.panelOrigin = window.frame.origin
         try? s.save(to: stateURL)
@@ -115,7 +121,7 @@ final class PanelController {
             Task { @MainActor in self?.hide() }
         }
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
-            guard let self, self.isVisible, event.window != self.window else { return event }
+            guard let self, self.isVisible, event.window != self.window, event.window != self.anchorWindow else { return event }
             self.hide()
             return event
         }
