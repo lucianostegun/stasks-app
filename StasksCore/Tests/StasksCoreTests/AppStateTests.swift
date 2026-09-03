@@ -14,4 +14,19 @@ final class AppStateTests: XCTestCase {
         let back = AppState.load(from: url, now: Date())
         XCTAssertEqual(back, s)
     }
+
+    func testSaveIfNewCreatesWhenAbsentAndSkipsWhenPresent() throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString)/state.json")
+        let first = AppState(installedAt: Date(timeIntervalSince1970: 1_000))
+        XCTAssertTrue(first.saveIfNew(to: url))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+
+        let onDisk = AppState.load(from: url, now: Date())
+        var second = onDisk
+        second.installedAt = Date(timeIntervalSince1970: 2_000)
+        XCTAssertFalse(second.saveIfNew(to: url))
+
+        let unchanged = AppState.load(from: url, now: Date())
+        XCTAssertEqual(unchanged, onDisk)
+    }
 }

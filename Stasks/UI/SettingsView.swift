@@ -33,6 +33,7 @@ struct SettingsView: View {
             }
             .onChange(of: prefs.hotKey) { _, new in model.onHotKeyChanged(new) }
             Toggle("Abrir no login", isOn: Binding(get: { model.launchAtLogin }, set: { model.launchAtLogin = $0 }))
+            if let msg = model.generalMessage { Text(msg).font(.caption).foregroundStyle(.secondary) }
         }.formStyle(.grouped)
     }
 

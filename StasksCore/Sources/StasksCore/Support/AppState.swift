@@ -62,6 +62,16 @@ extension AppState: Codable {
 }
 
 extension AppState {
+    /// Persists a freshly created state so `installedAt` is stable across launches.
+    @discardableResult
+    public func saveIfNew(to url: URL) -> Bool {
+        guard !FileManager.default.fileExists(atPath: url.path) else { return false }
+        try? save(to: url)
+        return true
+    }
+}
+
+extension AppState {
     public static func == (lhs: AppState, rhs: AppState) -> Bool {
         let panelOriginEqual: Bool
         switch (lhs.panelOrigin, rhs.panelOrigin) {

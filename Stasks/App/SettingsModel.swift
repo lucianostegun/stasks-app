@@ -15,6 +15,7 @@ final class SettingsModel {
     var anthropicKey: String = KeychainStore.get(KeychainStore.anthropicKey) ?? ""
     var hookStatus: HookStatus = .missing
     var hookMessage: String?
+    var generalMessage: String?
     var slackTestResult: String?
     var anthropicTestResult: String?
 
@@ -68,6 +69,6 @@ final class SettingsModel {
 
     var launchAtLogin: Bool {
         get { SMAppService.mainApp.status == .enabled }
-        set { do { newValue ? try SMAppService.mainApp.register() : try SMAppService.mainApp.unregister() } catch { hookMessage = error.localizedDescription } }
+        set { do { newValue ? try SMAppService.mainApp.register() : try SMAppService.mainApp.unregister() } catch { generalMessage = error.localizedDescription } }
     }
 }
