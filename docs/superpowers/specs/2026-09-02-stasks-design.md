@@ -172,7 +172,7 @@ Primeiro boot: `installedAt = now`; só mensagens das últimas 24h entram.
 
 ### 7.2 Painel
 
-- Largura fixa 340pt. Altura automática (segue o conteúdo até 70% da tela, depois rola) até o usuário arrastar a borda inferior; a partir daí a altura é manual, persistida em `UserDefaults`, e a lista preenche a janela. Duplo clique no título "Stasks" volta ao automático.
+- `NSPanel` (`.nonactivatingPanel`, `.borderless`, `.resizable`), cantos 16pt via `maskImage` no `NSVisualEffectView`, hospedando SwiftUI. Largura fixa 340pt. Altura automática (segue o conteúdo até 70% da tela, depois rola) até o usuário arrastar a borda inferior; a partir daí a altura é manual, persistida em `UserDefaults`, e a lista preenche a janela. Duplo clique no título "Stasks" volta ao automático.
 - Abre ancorado abaixo do ícone da menu bar.
 - Modo normal: fecha ao clicar fora ou `Esc`.
 - Modo "sempre visível" (📌): `level = .floating`, `hidesOnDeactivate = false`, `collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]`. Arrastável pelo header, posição persistida. Estado do pin persistido.
