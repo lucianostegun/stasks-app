@@ -41,7 +41,13 @@ public final class TranscriptWatcher: @unchecked Sendable {
     private func readNew(sessionId: String, url: URL) {
         guard var entry = entries[sessionId], let handle = try? FileHandle(forReadingFrom: url) else { return }
         defer { try? handle.close() }
-        guard let size = try? handle.seekToEnd(), size > entry.offset else { return }
+        guard let size = try? handle.seekToEnd() else { return }
+        if size < entry.offset {
+            // File was truncated or replaced (delete/rename + recreate): re-read from the start.
+            entry.offset = 0
+            entries[sessionId] = entry
+        }
+        guard size > entry.offset else { return }
         try? handle.seek(toOffset: entry.offset)
         guard let data = try? handle.readToEnd() else { return }
         entry.offset = size
