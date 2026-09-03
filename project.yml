@@ -26,6 +26,9 @@ targets:
         CFBundleName: Stasks
         NSAppleEventsUsageDescription: Stasks focuses the iTerm2 tab of a Claude Code session when you click a task.
         NSHumanReadableCopyright: Luciano Stegun
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lucianostegun.stasks
