@@ -10,16 +10,26 @@
 		1F4AAD7371813D73D48EB1D7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C19676B964487247C4347378 /* AppDelegate.swift */; };
 		31F41E0952AB80B690E29D0C /* StasksCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA427AE3F8ED672E503F52A /* StasksCore */; };
 		4162082B14FAE14CEABCFCC9 /* stasks-hook.sh in Resources */ = {isa = PBXBuildFile; fileRef = 1D6D92AFC30DF2754163EA21 /* stasks-hook.sh */; };
+		56BCB46766E2603DB8E9814B /* TerminalFocuser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915A4B3B7E0A119377531757 /* TerminalFocuser.swift */; };
+		6C8E1E75095359C4830118D0 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F335E6CEC7F86479D4DDDEE /* Preferences.swift */; };
+		B4C7FB3DD94A8DA427CAA838 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00311D24C5B2D5161CCB8B5 /* HotKeyManager.swift */; };
+		C4BDB748472CEEF48625D095 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C773BF3E27136F4EE3C7530A /* KeychainStore.swift */; };
 		CB7495525D195D1FD3F70F97 /* StasksApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6572C4902BF28E882500E54C /* StasksApp.swift */; };
+		D597953AF011CCD082A056E2 /* SourceOpener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802AE503F60A0CA807E86D27 /* SourceOpener.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1D6D92AFC30DF2754163EA21 /* stasks-hook.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "stasks-hook.sh"; sourceTree = "<group>"; };
 		6572C4902BF28E882500E54C /* StasksApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StasksApp.swift; sourceTree = "<group>"; };
+		6F335E6CEC7F86479D4DDDEE /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
 		765B1918E4C44DDAE7EFD1C0 /* Stasks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stasks.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		802AE503F60A0CA807E86D27 /* SourceOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceOpener.swift; sourceTree = "<group>"; };
+		915A4B3B7E0A119377531757 /* TerminalFocuser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalFocuser.swift; sourceTree = "<group>"; };
 		9338FD8E35F7AD03A27139FE /* StasksCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = StasksCore; path = StasksCore; sourceTree = SOURCE_ROOT; };
 		B2C7FEFEA7B066E287B99502 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C19676B964487247C4347378 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		C773BF3E27136F4EE3C7530A /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		E00311D24C5B2D5161CCB8B5 /* HotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,7 +58,12 @@
 			isa = PBXGroup;
 			children = (
 				C19676B964487247C4347378 /* AppDelegate.swift */,
+				E00311D24C5B2D5161CCB8B5 /* HotKeyManager.swift */,
+				C773BF3E27136F4EE3C7530A /* KeychainStore.swift */,
+				6F335E6CEC7F86479D4DDDEE /* Preferences.swift */,
+				802AE503F60A0CA807E86D27 /* SourceOpener.swift */,
 				6572C4902BF28E882500E54C /* StasksApp.swift */,
+				915A4B3B7E0A119377531757 /* TerminalFocuser.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -163,7 +178,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F4AAD7371813D73D48EB1D7 /* AppDelegate.swift in Sources */,
+				B4C7FB3DD94A8DA427CAA838 /* HotKeyManager.swift in Sources */,
+				C4BDB748472CEEF48625D095 /* KeychainStore.swift in Sources */,
+				6C8E1E75095359C4830118D0 /* Preferences.swift in Sources */,
+				D597953AF011CCD082A056E2 /* SourceOpener.swift in Sources */,
 				CB7495525D195D1FD3F70F97 /* StasksApp.swift in Sources */,
+				56BCB46766E2603DB8E9814B /* TerminalFocuser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
