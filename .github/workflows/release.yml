@@ -9,12 +9,15 @@ permissions:
 
 jobs:
   release:
-    runs-on: macos-15
+    # macos-26 ships Xcode 26, needed to compile the Icon Composer AppIcon.icon bundle.
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
 
       - name: Install xcodegen
-        run: brew install xcodegen
+        run: |
+          brew install xcodegen
+          xcodebuild -version
 
       - name: Import Developer ID certificate
         env:

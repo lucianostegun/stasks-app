@@ -52,6 +52,7 @@ export: archive
 	rm -rf $(EXPORT)
 	xcodebuild -exportArchive -archivePath $(ARCHIVE) -exportOptionsPlist ExportOptions.plist -exportPath $(EXPORT) | tail -5
 	codesign --verify --deep --strict --verbose=2 $(EXPORT)/Stasks.app
+	@test -f $(EXPORT)/Stasks.app/Contents/Resources/AppIcon.icns || { echo "AppIcon.icns missing: AppIcon.icon needs Xcode 26+ to compile"; exit 1; }
 
 dmg: export
 	rm -rf $(BUILD_DIR)/dmg $(DMG)
