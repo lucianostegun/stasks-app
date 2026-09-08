@@ -52,8 +52,13 @@ struct StackPanelView: View {
                 .padding(.horizontal, 6)
 
                 if !completed.isEmpty, !model.prefs.completedCollapsed {
-                    LazyVStack(spacing: 2) { ForEach(completed) { task in row(task).opacity(0.8) } }
-                        .frame(maxHeight: 220)
+                    // Same shape as the active list: a bare LazyVStack under frame(maxHeight:) is not clipped,
+                    // so with many done tasks the rows spilled above and below the section over the active list.
+                    ScrollView {
+                        LazyVStack(spacing: 2) { ForEach(completed) { task in row(task).opacity(0.8) } }
+                    }
+                    .frame(maxHeight: 220)
+                    .scrollBounceBehavior(.basedOnSize)
                 }
             }
         }
