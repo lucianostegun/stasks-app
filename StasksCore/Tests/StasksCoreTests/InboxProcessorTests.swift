@@ -46,8 +46,8 @@ final class InboxProcessorTests: XCTestCase {
         XCTAssertEqual(t?.subtitle, "soci-app")
         XCTAssertEqual(t?.status, .open)
         XCTAssertEqual(t?.activity, .working)
-        if case let .claude(_, transcript, cwd, iterm)? = t?.source {
-            XCTAssertEqual(transcript, "/t.jsonl"); XCTAssertEqual(cwd, "/Users/x/soci-app"); XCTAssertEqual(iterm, "w0:ID")
+        if case let .claude(_, transcript, cwd, terminal)? = t?.source {
+            XCTAssertEqual(transcript, "/t.jsonl"); XCTAssertEqual(cwd, "/Users/x/soci-app"); XCTAssertEqual(terminal?.itermSessionId, "w0:ID")
         } else { XCTFail("wrong source") }
     }
 

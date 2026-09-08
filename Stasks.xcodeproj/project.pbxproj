@@ -48,6 +48,7 @@
 		46FDEBB5D4712DB866FAB101 /* TaskRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowView.swift; sourceTree = "<group>"; };
 		4B35586605A0ABB73F0E370B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		4D7CC2BD6F22FCAAC115793C /* PanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelController.swift; sourceTree = "<group>"; };
+		5D62C38C301492F5C14A10C6 /* Stasks.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Stasks.entitlements; sourceTree = "<group>"; };
 		63CC7B3596D045744E730BCE /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		6572C4902BF28E882500E54C /* StasksApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StasksApp.swift; sourceTree = "<group>"; };
 		6F335E6CEC7F86479D4DDDEE /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
@@ -162,6 +163,7 @@
 			children = (
 				AFFBFE7CBDD29870C0C6D079 /* AppIcon.icon */,
 				B2C7FEFEA7B066E287B99502 /* Info.plist */,
+				5D62C38C301492F5C14A10C6 /* Stasks.entitlements */,
 				2A0E98A4FD7D5E98E24AE15F /* App */,
 				7F3F552284805CF274EB5898 /* Localization */,
 				4839EEA803FA0F4C0CACC15D /* Panel */,
@@ -370,12 +372,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Stasks/Stasks.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MJGJ2M2MK9;
-				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Stasks/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -395,12 +398,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Stasks/Stasks.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MJGJ2M2MK9;
-				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Stasks/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

@@ -21,7 +21,7 @@ public enum TaskSourceKind: String, Codable, Sendable {
 }
 
 public enum TaskSource: Codable, Equatable, Sendable {
-    case claude(sessionId: String, transcriptPath: String, cwd: String, itermSessionId: String?)
+    case claude(sessionId: String, transcriptPath: String, cwd: String, terminal: TerminalRef?)
     case slack(teamId: String, channelId: String, channelName: String, ts: String, permalink: String)
     case manual
 
@@ -90,10 +90,10 @@ public struct TaskItem: Identifiable, Codable, Equatable, Sendable {
         return "~" + path.dropFirst(home.count)
     }
 
-    public static func claude(sessionId: String, cwd: String, transcriptPath: String, itermSessionId: String?, now: Date) -> TaskItem {
+    public static func claude(sessionId: String, cwd: String, transcriptPath: String, terminal: TerminalRef?, now: Date) -> TaskItem {
         TaskItem(title: folderName(cwd: cwd),
                  subtitle: abbreviatedHome(cwd),
-                 source: .claude(sessionId: sessionId, transcriptPath: transcriptPath, cwd: cwd, itermSessionId: itermSessionId),
+                 source: .claude(sessionId: sessionId, transcriptPath: transcriptPath, cwd: cwd, terminal: terminal),
                  createdAt: now)
     }
 

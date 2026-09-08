@@ -8,9 +8,14 @@ INPUT="$(cat 2>/dev/null)"
 [ -n "$INPUT" ] || exit 0
 mkdir -p "$DIR" 2>/dev/null || exit 0
 
+# Controlling terminal of this hook (inherited from the Claude Code process), e.g. "ttys003". "??" when none.
+TTY="$(ps -o tty= -p $$ 2>/dev/null | tr -d ' ')"
+case "$TTY" in ""|"??"|"-") TTY="" ;; *) TTY="/dev/$TTY" ;; esac
+
 LINE="$(printf '%s' "$INPUT" | "$JQ" -c \
   --arg iterm "${ITERM_SESSION_ID:-}" \
   --arg term "${TERM_PROGRAM:-}" \
+  --arg tty "$TTY" \
   --argjson ts "$(date +%s)" '
   {
     event: .hook_event_name,
@@ -23,6 +28,7 @@ LINE="$(printf '%s' "$INPUT" | "$JQ" -c \
     message: .message,
     iterm_session_id: (if $iterm == "" then null else $iterm end),
     term_program: (if $term == "" then null else $term end),
+    tty: (if $tty == "" then null else $tty end),
     ts: $ts
   }' 2>/dev/null)"
 

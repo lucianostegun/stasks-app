@@ -2,20 +2,26 @@ import AppKit
 import StasksCore
 
 enum TerminalFocuser {
-    /// `ITERM_SESSION_ID` looks like `w0t3p1:651EB773-...`. iTerm2's AppleScript `unique id` is the UUID part.
-    static func uuid(from itermSessionId: String) -> String {
-        itermSessionId.split(separator: ":").last.map(String.init) ?? itermSessionId
-    }
-
-    static func focus(itermSessionId: String?, fallbackPath: String) {
-        if let id = itermSessionId, focusITerm(uuid: uuid(from: id)) { return }
+    /// Brings the session's terminal to the front. Falls back to opening `fallbackPath` in Finder when the
+    /// terminal is unknown or the scripted focus fails.
+    static func focus(terminal: TerminalRef?, fallbackPath: String) {
+        switch TerminalTarget.resolve(terminal) {
+        case let .itermSession(uuid):
+            if focusITerm(uuid: uuid) { return }
+        case let .terminalTab(tty):
+            if focusAppleTerminal(tty: tty) { return }
+        case let .activate(bundleId):
+            if activate(bundleId: bundleId) { return }
+        case .none:
+            break
+        }
         NSWorkspace.shared.open(URL(fileURLWithPath: fallbackPath))
     }
 
     static func focusITerm(uuid: String) -> Bool {
         // The UUID is interpolated into an AppleScript string literal, so allow only hex digits and dashes.
         guard !uuid.isEmpty, uuid.allSatisfy({ $0.isHexDigit || $0 == "-" }) else { return false }
-        let script = """
+        return run(script: """
         tell application "iTerm2"
             repeat with w in windows
                 repeat with t in tabs of w
@@ -32,11 +38,39 @@ enum TerminalFocuser {
             end repeat
         end tell
         return false
-        """
+        """, label: "iTerm")
+    }
+
+    static func focusAppleTerminal(tty: String) -> Bool {
+        // `tty` looks like "/dev/ttys004". Restrict to that shape before interpolating into the script.
+        guard tty.hasPrefix("/dev/tty"), tty.dropFirst(8).allSatisfy({ $0.isLetter || $0.isNumber }) else { return false }
+        return run(script: """
+        tell application "Terminal"
+            repeat with w in windows
+                repeat with t in tabs of w
+                    if tty of t is "\(tty)" then
+                        set selected tab of w to t
+                        set index of w to 1
+                        activate
+                        return true
+                    end if
+                end repeat
+            end repeat
+        end tell
+        return false
+        """, label: "Terminal")
+    }
+
+    static func activate(bundleId: String) -> Bool {
+        guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleId).first else { return false }
+        return app.activate()
+    }
+
+    private static func run(script: String, label: String) -> Bool {
         var error: NSDictionary?
         guard let apple = NSAppleScript(source: script) else { return false }
         let result = apple.executeAndReturnError(&error)
-        if let error { Log.ui.error("iTerm focus failed: \(error, privacy: .public)"); return false }
+        if let error { Log.ui.error("\(label, privacy: .public) focus failed: \(error, privacy: .public)"); return false }
         return result.booleanValue
     }
 }

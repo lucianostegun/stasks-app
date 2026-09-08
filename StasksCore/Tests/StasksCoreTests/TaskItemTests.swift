@@ -4,7 +4,7 @@ import XCTest
 final class TaskItemTests: XCTestCase {
     func testClaudeFactoryDefaults() {
         let now = Date(timeIntervalSince1970: 1_000)
-        let t = TaskItem.claude(sessionId: "s1", cwd: "/Users/me/Projetos/foo", transcriptPath: "/t.jsonl", itermSessionId: "w0t1p0:ABC", now: now)
+        let t = TaskItem.claude(sessionId: "s1", cwd: "/Users/me/Projetos/foo", transcriptPath: "/t.jsonl", terminal: TerminalRef(program: "iTerm.app", itermSessionId: "w0t1p0:ABC", tty: nil), now: now)
         XCTAssertEqual(t.title, "foo")
         XCTAssertEqual(t.subtitle, TaskItem.abbreviatedHome("/Users/me/Projetos/foo"))
         XCTAssertEqual(TaskItem.abbreviatedHome(FileManager.default.homeDirectoryForCurrentUser.path + "/x"), "~/x")

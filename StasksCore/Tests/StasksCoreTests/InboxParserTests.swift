@@ -12,6 +12,19 @@ final class InboxParserTests: XCTestCase {
         XCTAssertEqual(e?.ts, 1788377555)
     }
 
+    func testParsesTerminalFields() {
+        let line = #"{"event":"SessionStart","session_id":"S1","iterm_session_id":null,"term_program":"Apple_Terminal","tty":"/dev/ttys004"}"#
+        let e = InboxParser.parse(line: line)
+        XCTAssertEqual(e?.termProgram, "Apple_Terminal")
+        XCTAssertEqual(e?.tty, "/dev/ttys004")
+        XCTAssertEqual(e?.terminal, TerminalRef(program: "Apple_Terminal", itermSessionId: nil, tty: "/dev/ttys004"))
+    }
+
+    func testTerminalIsNilWhenNoTerminalInfo() {
+        let e = InboxParser.parse(line: #"{"event":"SessionEnd","session_id":"S1","reason":"exit"}"#)
+        XCTAssertNil(e?.terminal)
+    }
+
     func testUnknownEventIsIgnored() {
         XCTAssertNil(InboxParser.parse(line: #"{"event":"PreToolUse","session_id":"S1"}"#))
     }

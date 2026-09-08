@@ -17,14 +17,23 @@ public struct InboxEvent: Decodable, Equatable, Sendable {
     public let prompt: String?
     public let reason: String?
     public let itermSessionId: String?
+    public let termProgram: String?
+    public let tty: String?
     public let ts: Double?
     public let message: String?
 
     public init(event: Kind, sessionId: String, cwd: String?, transcriptPath: String?, source: String?,
-                prompt: String?, reason: String?, itermSessionId: String?, ts: Double?, message: String? = nil) {
+                prompt: String?, reason: String?, itermSessionId: String?, ts: Double?, message: String? = nil,
+                termProgram: String? = nil, tty: String? = nil) {
         self.event = event; self.sessionId = sessionId; self.cwd = cwd; self.transcriptPath = transcriptPath
         self.source = source; self.prompt = prompt; self.reason = reason; self.itermSessionId = itermSessionId; self.ts = ts
-        self.message = message
+        self.message = message; self.termProgram = termProgram; self.tty = tty
+    }
+
+    /// Terminal captured by the hook, or nil when the hook saw no terminal info at all.
+    public var terminal: TerminalRef? {
+        let ref = TerminalRef(program: termProgram, itermSessionId: itermSessionId, tty: tty)
+        return ref.isEmpty ? nil : ref
     }
 }
 

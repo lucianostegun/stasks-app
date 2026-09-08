@@ -42,7 +42,8 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         CODE_SIGN_IDENTITY: "Apple Development"
         CODE_SIGN_STYLE: Automatic
-        ENABLE_HARDENED_RUNTIME: NO
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_ENTITLEMENTS: Stasks/Stasks.entitlements
         DEVELOPMENT_TEAM: MJGJ2M2MK9
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_STRICT_CONCURRENCY: minimal

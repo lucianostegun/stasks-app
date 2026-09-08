@@ -63,7 +63,7 @@ public struct InboxProcessor {
         guard !isCommand, !CompletionPhrase.matches(prompt) else { return }
         let cwd = e.cwd ?? FileManager.default.homeDirectoryForCurrentUser.path
         var task = TaskItem.claude(sessionId: e.sessionId, cwd: cwd, transcriptPath: e.transcriptPath ?? "",
-                                   itermSessionId: e.itermSessionId, now: now())
+                                   terminal: e.terminal, now: now())
         task.title = TaskItem.truncatedTitle(trimmed)
         task.subtitle = TaskItem.folderName(cwd: cwd)
         task.activity = .working

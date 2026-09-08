@@ -7,6 +7,23 @@ TMP="$(mktemp -d)"
 export STASKS_INBOX_DIR="$TMP"
 FAILS=0
 
+# Runs a command with a fresh pseudo-terminal as its controlling tty, and waits for it. Works even when this
+# test has no tty itself (CI, editor tasks), unlike `script`, which needs a tty on stdin.
+with_pty() {
+  python3 - "$@" <<'PY'
+import os, sys
+pid, fd = os.forkpty()
+if pid == 0:
+    os.execvp(sys.argv[1], sys.argv[1:])
+while True:
+    try:
+        if not os.read(fd, 4096): break
+    except OSError:
+        break
+os.waitpid(pid, 0)
+PY
+}
+
 assert_eq() { # actual expected label
   if [ "$1" != "$2" ]; then echo "FAIL $3: got '$1' expected '$2'"; FAILS=$((FAILS+1)); else echo "ok   $3"; fi
 }
@@ -52,6 +69,16 @@ echo '{"hook_event_name":"SessionEnd","session_id":"S1","reason":"exit"}' | env 
 LINE="$(tail -n1 "$TMP/inbox.jsonl")"
 assert_eq "$(echo "$LINE" | jq -r .iterm_session_id)" "null" "iterm null when unset"
 assert_eq "$(echo "$LINE" | jq -r .reason)" "exit" "reason"
+
+# 7. term_program is recorded, and tty comes from the controlling terminal (allocated here with with_pty)
+: > "$TMP/inbox.jsonl"
+with_pty bash -c "echo '{\"hook_event_name\":\"SessionStart\",\"session_id\":\"S2\"}' | STASKS_INBOX_DIR='$TMP' TERM_PROGRAM=Apple_Terminal bash '$HOOK'"
+LINE="$(tail -n1 "$TMP/inbox.jsonl")"
+assert_eq "$(echo "$LINE" | jq -r .term_program)" "Apple_Terminal" "term program"
+case "$(echo "$LINE" | jq -r .tty)" in
+  /dev/tty*) echo "ok   tty from controlling terminal" ;;
+  *) echo "FAIL tty from controlling terminal: got '$(echo "$LINE" | jq -r .tty)'"; FAILS=$((FAILS+1)) ;;
+esac
 
 rm -rf "$TMP"
 if [ $FAILS -gt 0 ]; then echo "$FAILS failure(s)"; exit 1; fi

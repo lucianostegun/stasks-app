@@ -71,7 +71,7 @@ final class TaskStoreTests: XCTestCase {
 
     func testLookupsByClaudeSessionAndSlackKey() {
         let s = makeStore()
-        s.add(TaskItem.claude(sessionId: "s1", cwd: "/a", transcriptPath: "/t", itermSessionId: nil, now: clock))
+        s.add(TaskItem.claude(sessionId: "s1", cwd: "/a", transcriptPath: "/t", terminal: nil, now: clock))
         s.add(TaskItem.slack(teamId: "T", channelId: "C1", channelName: "c", ts: "9.9", permalink: "", text: "x", author: "a", isDM: false, now: clock))
         XCTAssertNotNil(s.task(claudeSessionId: "s1"))
         XCTAssertNil(s.task(claudeSessionId: "nope"))
