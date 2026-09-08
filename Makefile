@@ -1,3 +1,5 @@
+SHELL:=/bin/bash
+.SHELLFLAGS:=-o pipefail -c
 SCHEME=Stasks
 BUILD_DIR=build
 APP=$(BUILD_DIR)/Build/Products/Release/Stasks.app
@@ -38,10 +40,13 @@ install: build
 	open /Applications/Stasks.app
 
 # Release pipeline: archive -> export signed with Developer ID -> dmg -> notarize + staple.
+# The archive signs manually with $(SIGN_IDENTITY): dev builds use "Apple Development" (project.yml), which
+# CI does not have.
 # `make release` produces $(DMG), ready to attach to a GitHub release.
 archive: gen
 	xcodebuild -project Stasks.xcodeproj -scheme $(SCHEME) -configuration Release \
-		-derivedDataPath $(BUILD_DIR) -archivePath $(ARCHIVE) archive | tail -5
+		-derivedDataPath $(BUILD_DIR) -archivePath $(ARCHIVE) \
+		CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="$(SIGN_IDENTITY)" archive | tail -5
 
 export: archive
 	rm -rf $(EXPORT)
