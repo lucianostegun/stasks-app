@@ -15,6 +15,7 @@ struct TaskRowView: View {
     @State private var draft = ""
     @FocusState private var focused: Bool
     @State private var pulse = false
+    @State private var barPulse = false
 
     private var isDone: Bool { task.status == .done }
     private var activity: ClaudeActivity? { isDone ? nil : task.activity }
@@ -60,18 +61,21 @@ struct TaskRowView: View {
         }
         .padding(.vertical, 9).padding(.leading, 14).padding(.trailing, 12)
         .background(alignment: .leading) {
+            // Working: the status bar breathes (dimmer and brighter). Discreet on purpose; the row itself stays still.
+            let working = activity == .working
             RoundedRectangle(cornerRadius: 2)
                 .fill(Theme.statusColor(task.status))
                 .frame(width: 3)
-                .shadow(color: Theme.statusColor(task.status).opacity(0.6), radius: 4)
+                .opacity(working ? (barPulse ? 1 : 0.35) : 1)
+                .shadow(color: Theme.statusColor(task.status).opacity(working ? (barPulse ? 0.9 : 0.2) : 0.6), radius: working && barPulse ? 7 : 4)
                 .padding(.vertical, 10).padding(.leading, 4)
                 .animation(.spring(duration: 0.2), value: task.status)
         }
         .background(hovering ? Theme.rowHover(scheme) : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .background(activityGlow)
         .contentShape(Rectangle())
-        .onAppear { if activity == .waitingInput { startPulse() } }
-        .onChange(of: activity) { _, new in new == .waitingInput ? startPulse() : stopPulse() }
+        .onAppear { syncAnimations(activity) }
+        .onChange(of: activity) { _, new in syncAnimations(new) }
         .onHover { hovering = $0 }
         .onTapGesture(count: 2) { startEditing() }
         .onTapGesture(count: 1) { if !editing { onOpen() } }
@@ -102,6 +106,11 @@ struct TaskRowView: View {
         }
     }
 
+    private func syncAnimations(_ a: ClaudeActivity?) {
+        a == .waitingInput ? startPulse() : stopPulse()
+        a == .working ? startBarPulse() : stopBarPulse()
+    }
+
     private func startEditing() { draft = task.title; editing = true; focused = true }
 
     /// The repeat-forever animation only runs on a value change, so reset first and flip on the next run loop turn.
@@ -114,6 +123,17 @@ struct TaskRowView: View {
 
     private func stopPulse() {
         withAnimation(.easeInOut(duration: 0.3)) { pulse = false }
+    }
+
+    private func startBarPulse() {
+        barPulse = false
+        DispatchQueue.main.async {
+            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) { barPulse = true }
+        }
+    }
+
+    private func stopBarPulse() {
+        withAnimation(.easeInOut(duration: 0.3)) { barPulse = false }
     }
 
     private func label(for s: TaskStatus) -> String {
