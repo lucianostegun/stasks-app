@@ -5,3 +5,9 @@ DerivedData/
 *.xcuserstate
 xcuserdata/
 StasksCore/.build/
+
+# Never commit signing material
+*.p8
+*.p12
+*.cer
+*.certSigningRequest

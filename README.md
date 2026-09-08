@@ -7,7 +7,7 @@ Stasks is a macOS menu bar app that keeps one stack of tasks from three sources:
 - macOS with iTerm2 for Claude task focusing.
 - `jq` on `PATH`: the Claude hook parses its payload with `jq` and exits silently when it is missing, so no Claude tasks appear.
 - The first click on a Claude task triggers a macOS Automation (Apple Events) prompt for iTerm2. It must be allowed, otherwise focusing silently falls back to opening the project folder in Finder.
-- The app is signed with the Volkker development certificate (team MJGJ2M2MK9), so Keychain and Automation grants survive rebuilds. Building on a machine without that certificate needs `CODE_SIGN_IDENTITY: "-"` in `project.yml`, and then those prompts return after every rebuild.
+- Release builds are signed with the Volkker Developer ID certificate (team MJGJ2M2MK9) and notarized, so Keychain and Automation grants survive updates. Building on a machine without that certificate needs `CODE_SIGN_IDENTITY: "-"` in `project.yml`, and then those prompts return after every rebuild.
 
 ## Make targets
 
@@ -19,6 +19,7 @@ Stasks is a macOS menu bar app that keeps one stack of tasks from three sources:
 - `make run`: build, then launch `Stasks.app`.
 - `make install`: build, then copy `Stasks.app` into `/Applications` and launch it.
 - `make clean`: remove build artifacts and the package's `.build` directory.
+- `make release`: archive, export signed with Developer ID, build `build/Stasks-<version>.dmg`, notarize and staple it. See Releasing.
 
 ## Install
 
@@ -29,6 +30,20 @@ Stasks is a macOS menu bar app that keeps one stack of tasks from three sources:
    - **Anthropic API**: paste an `sk-ant-…` key, Save. Model fixed to Haiku.
    - **OpenAI-compatible**: base URL, model and key. Defaults to `https://api.openai.com/v1` and `gpt-5-mini`. Also works with Ollama (`http://localhost:11434/v1`, key empty), Groq, OpenRouter.
    - **Claude Code CLI**: no key. Runs `claude -p --model haiku` with `--setting-sources ""` so your hooks (including Stasks' own) stay off. Needs `claude` in `~/.local/bin`, `/opt/homebrew/bin` or `/usr/local/bin`, or a path set in the field. About 3s per title.
+
+## Releasing
+
+Downloads live on GitHub Releases as a notarized `.dmg`. Version comes from `MARKETING_VERSION` in `project.yml`.
+
+Locally, once: install the Developer ID Application certificate, then store App Store Connect API credentials for `notarytool`:
+
+```
+xcrun notarytool store-credentials notary --key AuthKey_XXXX.p8 --key-id XXXX --issuer <issuer-uuid>
+```
+
+Then `make release` and `gh release create vX.Y.Z build/Stasks-X.Y.Z.dmg --generate-notes`.
+
+CI does the same on every `v*` tag (`.github/workflows/release.yml`). It needs these repository secrets: `DEVELOPER_ID_P12_BASE64` and `DEVELOPER_ID_P12_PASSWORD` (the certificate plus private key exported from Keychain Access as .p12), `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` (contents of the .p8). The workflow fails if the tag does not match `MARKETING_VERSION`.
 
 ## Language
 
