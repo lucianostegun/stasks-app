@@ -15,6 +15,7 @@ final class SettingsModel {
     var slackToken: String = KeychainStore.get(KeychainStore.slackToken) ?? ""
     var anthropicKey: String = KeychainStore.get(KeychainStore.anthropicKey) ?? ""
     var openAIKey: String = KeychainStore.get(KeychainStore.openAIKey) ?? ""
+    var selectedTab: SettingsTab = .general
     var hookStatus: HookStatus = .missing
     var hookMessage: String?
     var generalMessage: String?
@@ -24,6 +25,7 @@ final class SettingsModel {
     @ObservationIgnored var onCredentialsChanged: () -> Void = {}
     @ObservationIgnored var onHotKeyChanged: (HotKeyChoice) -> Void = { _ in }
     @ObservationIgnored var onPollIntervalChanged: (Double) -> Void = { _ in }
+    @ObservationIgnored var onHookStatusChanged: (HookStatus) -> Void = { _ in }
     @ObservationIgnored private let previewPlayer = AttentionSound()
 
     init(prefs: Preferences, hookInstaller: HookInstaller,
@@ -40,6 +42,7 @@ final class SettingsModel {
     func refreshHookStatus() {
         do { hookStatus = try hookInstaller.status(); hookMessage = nil }
         catch { hookStatus = .missing; hookMessage = error.localizedDescription }
+        onHookStatusChanged(hookStatus)
     }
 
     func installHooks() {

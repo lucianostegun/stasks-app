@@ -27,7 +27,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Stasks focuses the iTerm2 tab of a Claude Code session when you click a task.</string>
+	<string>Stasks focuses the terminal tab of a Claude Code session when you click a task.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 Volkker Tech</string>
 </dict>

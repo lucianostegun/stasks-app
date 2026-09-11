@@ -1,6 +1,10 @@
 import SwiftUI
 import StasksCore
 
+enum SettingsTab: Hashable {
+    case general, claude, slack, titles, sounds
+}
+
 struct SettingsView: View {
     @Bindable var model: SettingsModel
     @Bindable var prefs: Preferences
@@ -11,12 +15,12 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        TabView {
-            general.tabItem { Label(L("settings.tab.general"), systemImage: "gearshape") }
-            claude.tabItem { Label("Claude", systemImage: "terminal") }
-            slack.tabItem { Label("Slack", systemImage: "number") }
-            titles.tabItem { Label(L("settings.tab.titles"), systemImage: "sparkles") }
-            sounds.tabItem { Label(L("settings.tab.sounds"), systemImage: "speaker.wave.2") }
+        TabView(selection: $model.selectedTab) {
+            general.tabItem { Label(L("settings.tab.general"), systemImage: "gearshape") }.tag(SettingsTab.general)
+            claude.tabItem { Label("Claude", systemImage: "terminal") }.tag(SettingsTab.claude)
+            slack.tabItem { Label("Slack", systemImage: "number") }.tag(SettingsTab.slack)
+            titles.tabItem { Label(L("settings.tab.titles"), systemImage: "sparkles") }.tag(SettingsTab.titles)
+            sounds.tabItem { Label(L("settings.tab.sounds"), systemImage: "speaker.wave.2") }.tag(SettingsTab.sounds)
         }
         .padding(.top, 12)
         .frame(width: 560, height: 440)
@@ -60,6 +64,10 @@ struct SettingsView: View {
         }.formStyle(.grouped)
     }
 
+    /// User Token Scopes the poller needs: reactions.list, conversations.info/replies, users.info.
+    private static let slackScopes = "reactions:read, channels:history, groups:history, im:history, mpim:history, channels:read, groups:read, users:read"
+    private static let slackAppsURL = URL(string: "https://api.slack.com/apps")!
+
     private var slack: some View {
         Form {
             SecureField(L("settings.slack.token"), text: $model.slackToken, prompt: Text("xoxp-…"))
@@ -70,8 +78,19 @@ struct SettingsView: View {
             if let r = model.slackTestResult { Text(r).font(.caption).foregroundStyle(.secondary) }
             Slider(value: $prefs.pollInterval, in: 10...60, step: 5) { Text(L("settings.slack.polling", Int(prefs.pollInterval))) }
                 .onChange(of: prefs.pollInterval) { _, new in model.onPollIntervalChanged(new) }
-            Text("Scopes: reactions:read, channels:history, groups:history, im:history, mpim:history, channels:read, groups:read, users:read")
-                .font(.caption2).foregroundStyle(.tertiary)
+            Section {
+                Text(L("settings.slack.help.steps"))
+                    .font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(L("settings.slack.help.scopes")).font(.caption).foregroundStyle(.secondary)
+                    Text(Self.slackScopes)
+                        .font(.caption2).monospaced().foregroundStyle(.tertiary).textSelection(.enabled)
+                }
+                Link(L("settings.slack.help.open"), destination: Self.slackAppsURL)
+                    .font(.caption)
+            } header: {
+                Text(L("settings.slack.help.title"))
+            }
         }.formStyle(.grouped).textFieldStyle(.roundedBorder)
     }
 

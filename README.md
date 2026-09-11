@@ -19,12 +19,14 @@ Stasks is a macOS menu bar app that keeps one stack of tasks from three sources:
 - `make run`: build, then launch `Stasks.app`.
 - `make install`: build, then copy `Stasks.app` into `/Applications` and launch it.
 - `make clean`: remove build artifacts and the package's `.build` directory.
+- `make reset-state`: wipe all local Stasks state (tasks, prefs, tokens, hooks, Automation grants) to test a first launch. Asks before deleting.
 - `make release`: archive, export signed with Developer ID, build `build/Stasks-<version>.dmg`, notarize and staple it. See Releasing.
 
 ## Install
 
-1. `make install` (builds Release, copies to /Applications, launches).
-2. Right click the menu bar icon, "Install Claude hooks" (or Settings, Claude tab). This edits ~/.claude/settings.json with a backup.
+1. Download the latest `.dmg` from GitHub Releases and drag Stasks to Applications, or `make install` to build from source (Release, copies to /Applications, launches).
+2. On first launch the setup assistant opens and checks Claude Code, `jq`, the hooks, the Automation permission per terminal, launch at login and Slack, each with a button that fixes it. It is also in the menu bar menu ("Setup assistant…") and opens from the panel banner whenever the hooks stop matching.
+3. Hooks: the app keeps a copy of `stasks-hook.sh` in `~/Library/Application Support/Stasks/` and points `~/.claude/settings.json` at it (with a backup of the file), so moving or reinstalling the app does not break them. "Install Claude hooks" in the menu or Settings, Claude tab does the same.
 3. Settings, Slack tab: paste the user token, Test, Save.
 4. Settings, Titles tab: pick a provider for Slack task titles and Test. Three options:
    - **Anthropic API**: paste an `sk-ant-…` key, Save. Model fixed to Haiku.

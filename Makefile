@@ -13,7 +13,7 @@ NOTARY_PROFILE=notary
 SIGN_IDENTITY=Developer ID Application
 NOTARY_ARGS=$(if $(NOTARY_KEY),--key "$(NOTARY_KEY)" --key-id "$(NOTARY_KEY_ID)" --issuer "$(NOTARY_ISSUER)",--keychain-profile "$(NOTARY_PROFILE)")
 
-.PHONY: gen build test-core test-hooks test run install clean archive export dmg notarize release
+.PHONY: gen build test-core test-hooks test run install clean archive export dmg notarize release reset-state
 
 gen:
 	xcodegen generate
@@ -69,6 +69,10 @@ notarize: dmg
 
 release: notarize
 	@echo "Release artifact: $(DMG)"
+
+# Simulates a fresh install: wipes tasks, prefs, tokens, hooks and permissions (asks first).
+reset-state:
+	bash scripts/reset-local-state.sh
 
 clean:
 	rm -rf $(BUILD_DIR) StasksCore/.build

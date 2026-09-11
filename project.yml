@@ -28,7 +28,7 @@ targets:
         LSApplicationCategoryType: public.app-category.productivity
         CFBundleDisplayName: Stasks
         CFBundleName: Stasks
-        NSAppleEventsUsageDescription: Stasks focuses the iTerm2 tab of a Claude Code session when you click a task.
+        NSAppleEventsUsageDescription: Stasks focuses the terminal tab of a Claude Code session when you click a task.
         NSHumanReadableCopyright: "© 2026 Volkker Tech"
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"

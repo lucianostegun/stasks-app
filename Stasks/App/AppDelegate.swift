@@ -6,8 +6,11 @@ import StasksCore
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let prefs = Preferences.shared
     private var settingsWindow: NSWindow?
+    private var setupWindow: NSWindow?
+    private var setupModel: SetupModel?
     private var settingsMenuItem: NSMenuItem?
     private var hooksMenuItem: NSMenuItem?
+    private var setupMenuItem: NSMenuItem?
     private var quitMenuItem: NSMenuItem?
     private let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Stasks")
     private var stateURL: URL { supportDir.appendingPathComponent("state.json") }
@@ -47,6 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         observeStore()
         observePoller()
         if prefs.pinned { panel.show(anchor: statusItem.button) }
+        if !prefs.setupCompleted { openSetup() }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -63,6 +67,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         model.onSizeChange = { [weak self] in self?.panel.contentSizeChanged($0) }
         model.onPinChanged = { [weak self] in self?.panel.setPinned($0) }
         model.onOpenSettings = { [weak self] in self?.openSettings() }
+        model.onOpenSetup = { [weak self] in self?.openSetup() }
         model.manualHeight = prefs.panelHeight.map { CGFloat($0) }
         model.onResetHeight = { [weak self] in self?.panel.resetHeight() }
         model.onSyncSlack = { [weak self] in
@@ -72,6 +77,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         panel.onManualHeightChanged = { [weak self] h in self?.model.manualHeight = h }
         panel.onShow = { [weak self] in
+            self?.settingsModel?.refreshHookStatus()
             Task { @MainActor in
                 guard let self else { return }
                 await self.poller.retryProvisionalTitles()
@@ -89,6 +95,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let hooks = menu.addItem(withTitle: L("menu.hooks.install"), action: #selector(installHooks), keyEquivalent: "")
         hooks.target = self
         hooksMenuItem = hooks
+        let setup = menu.addItem(withTitle: L("menu.setup"), action: #selector(openSetup), keyEquivalent: "")
+        setup.target = self
+        setupMenuItem = setup
         menu.addItem(.separator())
         quitMenuItem = menu.addItem(withTitle: L("menu.quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         statusItem = StatusItemController(onToggle: { [weak self] in self?.togglePanel() }, menu: menu)
@@ -98,6 +107,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// and all items pick up a language change made in Settings.
     func menuNeedsUpdate(_ menu: NSMenu) {
         settingsMenuItem?.title = L("menu.settings")
+        setupMenuItem?.title = L("menu.setup")
         quitMenuItem?.title = L("menu.quit")
         guard let item = hooksMenuItem, let sm = settingsModel else { return }
         sm.refreshHookStatus()
@@ -206,8 +216,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     // MARK: Settings
 
+    /// The hook command points at a copy of the script in Application Support, not at the bundle: a bundle path
+    /// breaks silently as soon as the app is moved. Falls back to the bundle path if the copy cannot be written.
+    private func hookScriptPath() -> String {
+        guard let bundled = Bundle.main.url(forResource: "stasks-hook", withExtension: "sh") else { return "" }
+        do { return try HookScript.sync(bundled: bundled, directory: supportDir).path }
+        catch { Log.ui.error("hook script sync failed: \(error, privacy: .public)"); return bundled.path }
+    }
+
     private func setupSettings() {
-        let scriptPath = Bundle.main.path(forResource: "stasks-hook", ofType: "sh") ?? ""
+        let scriptPath = hookScriptPath()
         let installer = HookInstaller(settingsURL: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/settings.json"), scriptPath: scriptPath)
         let sm = SettingsModel(prefs: prefs, hookInstaller: installer,
                                slackTestFactory: { SlackClient(token: $0) },
@@ -215,7 +233,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         sm.onCredentialsChanged = { [weak self] in self?.poller.reauthenticate(); self?.refreshCredentialState() }
         sm.onHotKeyChanged = { [weak self] in self?.hotKey.register($0) }
         sm.onPollIntervalChanged = { [weak self] in self?.poller.interval = $0 }
+        sm.onHookStatusChanged = { [weak self] status in
+            self?.model.hookProblem = status == .installed ? nil : L("panel.hooksProblem")
+        }
         settingsModel = sm
+        sm.refreshHookStatus()
         observeTitleProvider()
     }
 
@@ -240,8 +262,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// respond in an accessory (LSUIElement) app driven from a status item.
     /// While Settings is open the app is `.regular`, so it shows in Cmd+Tab and can take key focus;
     /// closing the window returns it to `.accessory`.
-    @objc func openSettings() {
+    @objc func openSettings() { showSettings(tab: nil) }
+
+    func showSettings(tab: SettingsTab?) {
         guard let sm = settingsModel else { return }
+        if let tab { sm.selectedTab = tab }
         if settingsWindow == nil {
             let host = NSHostingController(rootView: SettingsView(model: sm))
             let w = NSWindow(contentViewController: host)
@@ -249,8 +274,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             w.styleMask = [.titled, .closable, .miniaturizable]
             w.isReleasedWhenClosed = false
             w.center()
-            NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: w, queue: .main) { _ in
-                MainActor.assumeIsolated { _ = NSApp.setActivationPolicy(.accessory) }
+            NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: w, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { if self?.setupWindow?.isVisible != true { _ = NSApp.setActivationPolicy(.accessory) } }
             }
             settingsWindow = w
         }
@@ -263,6 +288,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func installHooks() {
         settingsModel?.installHooks()
         openSettings()
+    }
+
+    /// First-run checklist. Also reachable from the menu and from the hook banner in the panel.
+    @objc func openSetup() {
+        guard let sm = settingsModel else { return }
+        if setupWindow == nil {
+            let m = SetupModel(prefs: prefs, settings: sm)
+            m.onOpenSettings = { [weak self] tab in self?.showSettings(tab: tab) }
+            m.onFinished = { [weak self] in self?.setupWindow?.close() }
+            setupModel = m
+            let host = NSHostingController(rootView: SetupView(model: m))
+            let w = NSWindow(contentViewController: host)
+            w.title = L("setup.windowTitle")
+            w.styleMask = [.titled, .closable]
+            w.isReleasedWhenClosed = false
+            w.center()
+            NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: w, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    // Closing counts as done: the assistant must not come back on every launch.
+                    self?.prefs.setupCompleted = true
+                    self?.setupModel?.stopAutoRefresh()
+                    if self?.settingsWindow?.isVisible != true { _ = NSApp.setActivationPolicy(.accessory) }
+                }
+            }
+            setupWindow = w
+        }
+        setupModel?.refresh()
+        _ = NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        setupWindow?.makeKeyAndOrderFront(nil)
     }
 
     // MARK: Hotkey + lifecycle

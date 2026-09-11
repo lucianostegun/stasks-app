@@ -13,16 +13,19 @@
 		2E26689D37DC092F2F179DE8 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9202DCE24ACCEEDAA53A318 /* AppLanguage.swift */; };
 		31F41E0952AB80B690E29D0C /* StasksCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6EA427AE3F8ED672E503F52A /* StasksCore */; };
 		4162082B14FAE14CEABCFCC9 /* stasks-hook.sh in Resources */ = {isa = PBXBuildFile; fileRef = 1D6D92AFC30DF2754163EA21 /* stasks-hook.sh */; };
+		4343D4495792670B3629B5FB /* AutomationPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D8EBB27F862A97766605F9 /* AutomationPermission.swift */; };
 		445FD1A470F8E96768A8B884 /* PanelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1196E0AEA657742777C6D3B9 /* PanelModel.swift */; };
 		52EABB5ABBCAD404BF332916 /* TitleClientFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4FE3799A9DC83F4D1A209 /* TitleClientFactory.swift */; };
 		56BCB46766E2603DB8E9814B /* TerminalFocuser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915A4B3B7E0A119377531757 /* TerminalFocuser.swift */; };
 		6C8E1E75095359C4830118D0 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F335E6CEC7F86479D4DDDEE /* Preferences.swift */; };
 		72D7BB7584FFF668075F4742 /* PanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D7CC2BD6F22FCAAC115793C /* PanelController.swift */; };
 		880F0F745213C4B0FBC22FCF /* StackPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE434B4EFE9FFE3CC8D46AFA /* StackPanelView.swift */; };
+		8D620D7A5ADEBDD7B6EE8321 /* SetupModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 382F7A1F82EE1A14154E66AF /* SetupModel.swift */; };
 		92F4A415F7607699D6350BC6 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63CC7B3596D045744E730BCE /* Theme.swift */; };
 		9AC9A305EDBEA4CF305643AC /* NewTaskField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 255398EDE594B2EFFBEC3996 /* NewTaskField.swift */; };
 		A097E946F9DF3A8B4AEDFE85 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B35586605A0ABB73F0E370B /* SettingsView.swift */; };
 		A24F5025AE9E9A2CF6C58324 /* StackPanelWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B169C20CBF568D6AD079D07B /* StackPanelWindow.swift */; };
+		A70D7A02377DCC1683CB5E08 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EFD9676D486DDBD93AD1F75 /* SetupView.swift */; };
 		B4C7FB3DD94A8DA427CAA838 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00311D24C5B2D5161CCB8B5 /* HotKeyManager.swift */; };
 		C09ECE37E445690FFE2E766F /* AttentionSound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4318B5CA1399736E344D81D0 /* AttentionSound.swift */; };
 		C2808A39D23D37598391C078 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3C9602C509460665BA498AB4 /* Localizable.strings */; };
@@ -38,12 +41,14 @@
 /* Begin PBXFileReference section */
 		1196E0AEA657742777C6D3B9 /* PanelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelModel.swift; sourceTree = "<group>"; };
 		1D6D92AFC30DF2754163EA21 /* stasks-hook.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "stasks-hook.sh"; sourceTree = "<group>"; };
+		1EFD9676D486DDBD93AD1F75 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
 		20F4FE3799A9DC83F4D1A209 /* TitleClientFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleClientFactory.swift; sourceTree = "<group>"; };
 		226B41948E0E7A472FA63CC9 /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
 		243A06244829CD91D112E2E5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		255398EDE594B2EFFBEC3996 /* NewTaskField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTaskField.swift; sourceTree = "<group>"; };
 		33D6B30C032693EE1C30C589 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		34D38D4493B290260571A4FB /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
+		382F7A1F82EE1A14154E66AF /* SetupModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupModel.swift; sourceTree = "<group>"; };
 		4318B5CA1399736E344D81D0 /* AttentionSound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttentionSound.swift; sourceTree = "<group>"; };
 		46FDEBB5D4712DB866FAB101 /* TaskRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowView.swift; sourceTree = "<group>"; };
 		4B35586605A0ABB73F0E370B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -54,6 +59,7 @@
 		6F335E6CEC7F86479D4DDDEE /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
 		765B1918E4C44DDAE7EFD1C0 /* Stasks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stasks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		802AE503F60A0CA807E86D27 /* SourceOpener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceOpener.swift; sourceTree = "<group>"; };
+		87D8EBB27F862A97766605F9 /* AutomationPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationPermission.swift; sourceTree = "<group>"; };
 		915A4B3B7E0A119377531757 /* TerminalFocuser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalFocuser.swift; sourceTree = "<group>"; };
 		93049E7F3FF26A36C954E5A9 /* SettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModel.swift; sourceTree = "<group>"; };
 		9338FD8E35F7AD03A27139FE /* StasksCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = StasksCore; path = StasksCore; sourceTree = SOURCE_ROOT; };
@@ -97,10 +103,12 @@
 			children = (
 				C19676B964487247C4347378 /* AppDelegate.swift */,
 				4318B5CA1399736E344D81D0 /* AttentionSound.swift */,
+				87D8EBB27F862A97766605F9 /* AutomationPermission.swift */,
 				E00311D24C5B2D5161CCB8B5 /* HotKeyManager.swift */,
 				C773BF3E27136F4EE3C7530A /* KeychainStore.swift */,
 				6F335E6CEC7F86479D4DDDEE /* Preferences.swift */,
 				93049E7F3FF26A36C954E5A9 /* SettingsModel.swift */,
+				382F7A1F82EE1A14154E66AF /* SetupModel.swift */,
 				802AE503F60A0CA807E86D27 /* SourceOpener.swift */,
 				6572C4902BF28E882500E54C /* StasksApp.swift */,
 				915A4B3B7E0A119377531757 /* TerminalFocuser.swift */,
@@ -116,6 +124,7 @@
 				9EA7E8FA0160F1F3BFB0E1DB /* PanelHeaderView.swift */,
 				1196E0AEA657742777C6D3B9 /* PanelModel.swift */,
 				4B35586605A0ABB73F0E370B /* SettingsView.swift */,
+				1EFD9676D486DDBD93AD1F75 /* SetupView.swift */,
 				EE434B4EFE9FFE3CC8D46AFA /* StackPanelView.swift */,
 				46FDEBB5D4712DB866FAB101 /* TaskRowView.swift */,
 				63CC7B3596D045744E730BCE /* Theme.swift */,
@@ -273,6 +282,7 @@
 				1F4AAD7371813D73D48EB1D7 /* AppDelegate.swift in Sources */,
 				2E26689D37DC092F2F179DE8 /* AppLanguage.swift in Sources */,
 				C09ECE37E445690FFE2E766F /* AttentionSound.swift in Sources */,
+				4343D4495792670B3629B5FB /* AutomationPermission.swift in Sources */,
 				B4C7FB3DD94A8DA427CAA838 /* HotKeyManager.swift in Sources */,
 				C4BDB748472CEEF48625D095 /* KeychainStore.swift in Sources */,
 				1E21AA8E76BE886EA34B202F /* L10n.swift in Sources */,
@@ -283,6 +293,8 @@
 				6C8E1E75095359C4830118D0 /* Preferences.swift in Sources */,
 				E3E34A89AEC3928473038513 /* SettingsModel.swift in Sources */,
 				A097E946F9DF3A8B4AEDFE85 /* SettingsView.swift in Sources */,
+				8D620D7A5ADEBDD7B6EE8321 /* SetupModel.swift in Sources */,
+				A70D7A02377DCC1683CB5E08 /* SetupView.swift in Sources */,
 				D597953AF011CCD082A056E2 /* SourceOpener.swift in Sources */,
 				880F0F745213C4B0FBC22FCF /* StackPanelView.swift in Sources */,
 				A24F5025AE9E9A2CF6C58324 /* StackPanelWindow.swift in Sources */,

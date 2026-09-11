@@ -29,6 +29,10 @@
 "settings.slack.token" = "User token (xoxp-…)";
 "settings.slack.polling" = "Polling: %ds";
 "settings.slack.ok" = "OK: %@ as @%@";
+"settings.slack.help.title" = "How to get a token";
+"settings.slack.help.steps" = "1. Open api.slack.com/apps and click Create New App, then From scratch. Name it Stasks and pick your workspace.\n2. Open OAuth & Permissions and add the scopes below under User Token Scopes (not Bot Token Scopes).\n3. Click Install to Workspace at the top of that page and approve it.\n4. Copy the User OAuth Token (it starts with xoxp-) and paste it in the field above, then click Save.";
+"settings.slack.help.scopes" = "User Token Scopes:";
+"settings.slack.help.open" = "Open api.slack.com/apps";
 "settings.keychain.saved" = "Saved to Keychain";
 "settings.keychain.failed" = "Failed to save to Keychain (code %d)";
 
@@ -86,3 +90,42 @@
 "status.inProgress" = "In progress";
 "status.done" = "Done";
 "time.now" = "now";
+
+/* Setup assistant */
+"menu.setup" = "Setup assistant…";
+"panel.hooksProblem" = "Claude hooks need attention";
+"panel.fix" = "Fix";
+"setup.windowTitle" = "Stasks Setup";
+"setup.title" = "Welcome to Stasks";
+"setup.subtitle" = "Checking what Stasks needs to track your Claude Code sessions.";
+"setup.recheck" = "Check again";
+"setup.done" = "Done";
+"setup.openSettings" = "Open Settings…";
+"setup.required" = "Required";
+"setup.optional" = "Optional";
+"setup.found" = "Found at %@";
+"setup.copied" = "Copied: %@";
+"setup.enable" = "Enable";
+"setup.configure" = "Configure…";
+"setup.claude.viaHome" = "Detected via ~/.claude";
+"setup.claude.missing" = "Not found. Stasks reads Claude Code sessions through its hooks, so it must be installed.";
+"setup.claude.action" = "Get Claude Code";
+"setup.jq.missing" = "Not found. The hook parses events with jq. Install it with: brew install jq";
+"setup.jq.action" = "Copy command";
+"setup.hooks.ok" = "Installed in ~/.claude/settings.json";
+"setup.hooks.outdated" = "Installed, but pointing at an old location. Update so sessions show up again.";
+"setup.hooks.missing" = "Not installed. Without them no Claude session appears here.";
+"setup.hooks.install" = "Install";
+"setup.hooks.update" = "Update";
+"setup.automation.title" = "Control %@";
+"setup.automation.ok" = "Allowed. Clicking a task focuses its tab.";
+"setup.automation.denied" = "Denied. Turn on Stasks under Automation in System Settings, otherwise clicking a task opens the folder in Finder.";
+"setup.automation.notAsked" = "Not asked yet. Allow it so clicking a task focuses the right tab.";
+"setup.automation.notRunning" = "%@ is not running. macOS can only ask while it is open.";
+"setup.automation.request" = "Allow…";
+"setup.automation.systemSettings" = "System Settings…";
+"setup.automation.open" = "Open %@";
+"setup.login.on" = "Stasks starts when you log in.";
+"setup.login.off" = "Start Stasks automatically when you log in.";
+"setup.slack.ok" = "Token saved. Messages you react to with 👀 become tasks.";
+"setup.slack.missing" = "Add a Slack user token in Settings to turn messages you react to with 👀 into tasks.";

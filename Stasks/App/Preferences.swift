@@ -66,6 +66,8 @@ final class Preferences {
     /// 0...1, applied to `NSSound.volume`.
     var soundVolume: Double { didSet { d.set(soundVolume, forKey: "soundVolume") } }
     var completedCollapsed: Bool { didSet { d.set(completedCollapsed, forKey: "completedCollapsed") } }
+    /// Set when the setup assistant was dismissed once. It still opens from the menu.
+    var setupCompleted: Bool { didSet { d.set(setupCompleted, forKey: "setupCompleted") } }
     /// Persisted as two Doubles so the panel origin never contends with state.json, which the Slack poller also writes.
     /// nil = the panel height follows its content; a value = the user dragged the bottom edge.
     var panelHeight: Double? {
@@ -101,6 +103,7 @@ final class Preferences {
         soundName = d.string(forKey: "soundName") ?? AttentionSound.fallbackName
         soundVolume = d.object(forKey: "soundVolume") as? Double ?? 0.7
         completedCollapsed = d.object(forKey: "completedCollapsed") as? Bool ?? true
+        setupCompleted = d.bool(forKey: "setupCompleted")
         panelHeight = d.object(forKey: "panelHeight") as? Double
         if let x = d.object(forKey: "panelOriginX") as? Double, let y = d.object(forKey: "panelOriginY") as? Double {
             panelOrigin = CGPoint(x: x, y: y)

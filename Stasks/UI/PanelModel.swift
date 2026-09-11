@@ -13,6 +13,8 @@ final class PanelModel {
     var titleProviderUnconfigured = false
     /// Slack token saved, so the manual sync button makes sense.
     var slackConfigured = false
+    /// Hooks missing or pointing at a stale path: nothing from Claude arrives until fixed. Refreshed on launch and on panel show.
+    var hookProblem: String?
     var isSyncing = false
     var maxListHeight: CGFloat = 500
     /// Set when the user resized the panel; the list then fills the window instead of sizing to content.
@@ -21,6 +23,7 @@ final class PanelModel {
 
     @ObservationIgnored var onSizeChange: (CGSize) -> Void = { _ in }
     @ObservationIgnored var onOpenSettings: () -> Void = {}
+    @ObservationIgnored var onOpenSetup: () -> Void = {}
     @ObservationIgnored var onPinChanged: (Bool) -> Void = { _ in }
     @ObservationIgnored var onResetHeight: () -> Void = {}
     @ObservationIgnored var onSyncSlack: () async -> Void = {}
@@ -35,11 +38,15 @@ final class PanelModel {
     }
 
     var errorBanner: String? {
+        if let hookProblem { return hookProblem }
         if case let .disconnected(reason) = slackState { return L("panel.slackDisconnected", reason) }
         if let llmError { return llmError }
         if prefs.llmEnabled, titleProviderUnconfigured { return L("panel.titlesUnconfigured") }
         return nil
     }
+
+    /// The hook banner fixes itself in the setup assistant; the others in Settings.
+    func openBannerTarget() { hookProblem != nil ? onOpenSetup() : onOpenSettings() }
 
     func createManual(_ title: String) {
         let t = title.trimmingCharacters(in: .whitespacesAndNewlines)

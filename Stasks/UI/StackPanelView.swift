@@ -16,11 +16,11 @@ struct StackPanelView: View {
                 .padding(.bottom, 10)
 
             if let banner = model.errorBanner {
-                Button(action: model.onOpenSettings) {
+                Button(action: model.openBannerTarget) {
                     HStack(spacing: 6) {
                         Circle().fill(Color.red).frame(width: 6, height: 6)
                         Text(banner).font(.system(size: 11)).lineLimit(1)
-                        Spacer(); Text(L("panel.settings")).font(.system(size: 11, weight: .semibold))
+                        Spacer(); Text(model.hookProblem != nil ? L("panel.fix") : L("panel.settings")).font(.system(size: 11, weight: .semibold))
                     }
                 }
                 .buttonStyle(.plain).foregroundStyle(.secondary)
